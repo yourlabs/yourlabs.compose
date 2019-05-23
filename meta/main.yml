@@ -3,6 +3,7 @@ galaxy_info:
   author: James Pic
   description: Deploy a docker-compose.yml in a target directory
   company: YourLabs
+  role_name: compose
   issue_tracker_url: https://yourlabs.io/oss/yourlabs.compose/issues
   license: MIT
   min_ansible_version: 1.2
