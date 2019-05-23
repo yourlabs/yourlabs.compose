@@ -1,0 +1,28 @@
+---
+
+- name: Make home directory
+  file:
+    path: '{{ home }}'
+    state: directory
+
+- name: Ensure docker was setup once on this host
+  include_role: name=yourlabs.roleonce
+  vars:
+    rolenames: [yourlabs.docker]
+
+- name: Download compose file if URL
+  when: compose.startswith('https://') or compose.startswith('http://')
+  delegate_to: localhost
+  get_url:
+    url: '{{ compose }}'
+    dest: docker-compose.yml'
+
+- name: Upload compose file if path
+  when: not (compose.startswith('https://') or compose.startswith('http://'))
+  template:
+    src: '{{ compose }}'
+    dest: '{{ home }}/docker-compose.yml'
+
+- name: Run docker-compose
+  docker_compose:
+    project_src: '{{ home }}'
