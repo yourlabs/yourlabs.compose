@@ -45,19 +45,31 @@ class FilterModule(object):
                 config.setdefault('networks', {})
                 config['networks'][network] = dict(external=dict(name=network))
 
+            # to workaround https://github.com/docker/compose/issues/6833
+            replace = dict()
+
             environment = service.get('environment', [])
             if isinstance(environment, list):
                 new_environment = []
                 for line in environment:
                     var = line.split('=')[0]
                     if var in os.environ:
-                        val = os.getenv(var).replace('"', '\\"')
-                        new_environment.append(f'{var}="{val}"')
+                        val = os.getenv(var)
+                        new_environment.append(''.join([
+                            var,
+                            '=',
+                            val.replace('"', '\\"')
+                        ]))
+                        replace[var] = val
                     else:
                         new_environment.append(line)
                 service['environment'] = new_environment
+        result = yaml.dump(config)
 
-        return yaml.dump(config)
+        for var, val in replace.items():
+            result = result.replace('$' + var, val)
+            result = result.replace('${' + var + '}', val)
+        return result
 
     def external_networks(self, compose_content):
         config = yaml.safe_load(compose_content)
