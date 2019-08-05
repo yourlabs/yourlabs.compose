@@ -25,9 +25,19 @@
   set_fact:
     compose_content: '{{ (compose if not compose.startswith("http") else "docker-compose.yml")|docker_compose_rewrite(hostvars[inventory_hostname], docker_network_ls.stdout_lines) }}'
 
-- name: Get external networks from compose contents
+- name: Get external networks and directories from compose contents
   set_fact:
     external_networks: '{{ compose_content|docker_compose_external_networks }}'
+    external_config: '{{ compose_content|docker_compose_external_config }}'
+
+- name: Create directories from io.yourlabs.compose.mkdir
+  loop: '{{ external_config.get("mkdir", []) }}'
+  file:
+    state: directory
+    path: '{{ home }}/{{ item.path }}'
+    owner: '{{ item.owner }}'
+    group: '{{ item.group }}'
+    mode: '{{ item.mode }}'
 
 - name: Create docker networks
   docker_network:

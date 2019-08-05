@@ -40,7 +40,20 @@ Or, you can specify an alternate path or URL to the docker-compose.yml file to d
 
     bigsudo yourlabs.compose home=/home/yourproject compose=http://.../docker-compose.yml
 
-### .env generation
+### Directory generation
+
+This role can also pre-create directories with a given uid, gid and mode, with
+the `io.yourlabs.compose.mkdir` label as such:
+
+    volumes:
+    - "./log/admin:/app/log"
+    labels:
+    - "io.yourlabs.compose.mkdir=./app/log:1000:1000:0750"
+
+This will result in the creation of the `{{ home }}/log/admin` directory with
+owner 1000 and group 1000 and mode 0750.
+
+### Environment generation
 
 Another interresting feature is automatic environment provisionning with each
 variable declared in service environment that is defined at runtime. For

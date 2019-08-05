@@ -11,6 +11,7 @@ class FilterModule(object):
     def filters(self):
         return {
             'docker_compose_external_networks': self.external_networks,
+            'docker_compose_external_config': self.external_config,
             'docker_compose_rewrite': self.rewrite,
         }
 
@@ -87,4 +88,28 @@ class FilterModule(object):
 
             result.append(network['external'].get('name', name))
 
+        return result
+
+    def external_config(self, compose_content):
+        config = yaml.safe_load(compose_content)
+
+        result = dict()
+        for name, service in config.get('services', {}).items():
+            for label in service.get('labels', []):
+                var, val = label.split('=')
+                if not var.startswith('io.yourlabs.compose.'):
+                    continue
+                var = var[len('io.yourlabs.compose.'):]
+                if var == 'mkdir':
+                    result[var] = []
+                    for mkdir in val.split(','):
+                        parts = mkdir.split(':')
+                        result[var].append(dict(
+                            path=parts[0],
+                            owner=parts[1],
+                            group=parts[2],
+                            mode=parts[3],
+                        ))
+                else:
+                    result[var] = val
         return result
