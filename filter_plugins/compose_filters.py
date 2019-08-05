@@ -33,7 +33,10 @@ class FilterModule(object):
                 if key in service and isinstance(service[key], list):
                     value += service[key]
 
-                service[key] = value
+                if value:
+                    service[key] = value
+                elif key in service:
+                    service.pop(key)
 
             for network in service.get('networks', []):
                 if network in config.get('networks', {}).keys():
