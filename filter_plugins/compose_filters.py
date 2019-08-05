@@ -10,39 +10,14 @@ from ansible import errors
 class FilterModule(object):
     def filters(self):
         return {
-            'docker_compose_env_file': self.env_file,
             'docker_compose_external_networks': self.external_networks,
             'docker_compose_rewrite': self.rewrite,
         }
-
-    def env_file(self, compose_path):
-        with open(compose_path, 'r') as f:
-            config = yaml.safe_load(f)
-
-        result = []
-        for name, service in config.get('services', {}).items():
-            if 'environment' not in service:
-                continue
-            env = service['environment']
-
-            if isinstance(env, dict):
-                continue
-
-            for item in env:
-                var = item.split('=')[0]
-                if var not in os.environ:
-                    continue
-
-                val = os.getenv(var).replace('"', '\\"')
-                result.append(f'{var}="{val}"')
-
-        return '\n'.join(result)
 
     def rewrite(self, compose_path, hostvars, available_networks):
         with open(compose_path, 'r') as f:
             config = yaml.safe_load(f)
 
-        networks = hostvars.get('networks', '').split(',')
         external_networks = []
         for name, service in config.get('services', {}).items():
             for key, value in hostvars.items():
@@ -60,13 +35,6 @@ class FilterModule(object):
 
                 service[key] = value
 
-            for network in networks:
-                if not network:
-                    continue
-
-                config.setdefault('networks', {})
-                config['networks'][name] = dict(external=dict(name=network))
-
             for network in service.get('networks', []):
                 if network in config.get('networks', {}).keys():
                     continue
@@ -76,6 +44,18 @@ class FilterModule(object):
 
                 config.setdefault('networks', {})
                 config['networks'][network] = dict(external=dict(name=network))
+
+            environment = service.get('environment', [])
+            if isinstance(environment, list):
+                new_environment = []
+                for line in environment:
+                    var = line.split('=')[0]
+                    if var in os.environ:
+                        val = os.getenv(var).replace('"', '\\"')
+                        new_environment.append(f'{var}="{val}"')
+                    else:
+                        new_environment.append(line)
+                service['environment'] = new_environment
 
         return yaml.dump(config)
 

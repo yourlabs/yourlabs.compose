@@ -42,9 +42,9 @@ Or, you can specify an alternate path or URL to the docker-compose.yml file to d
 
 ### .env generation
 
-Another interresting feature is automatic .env generation with each variable
-declared in service environment that is defined at runtime. For example with
-this in docker-compose.yml:
+Another interresting feature is automatic environment provisionning with each
+variable declared in service environment that is defined at runtime. For
+example with this in docker-compose.yml:
 
     environment:
     - FOO
@@ -53,9 +53,10 @@ Then executing the yourlabs.compose role with the FOO variable defined as such:
 
     FOO=bar bigsudo yourlabs.compose home=/home/test
 
-Will also generate /home/test/.env with the following:
+Will result in the following environment:
 
-    FOO=bar
+    environment:
+    - FOO=bar
 
 ### YAML overrides on the CLI
 
@@ -93,11 +94,6 @@ docker-compose up will not create it and would fail as such:
 This role does prevent this issue by parsing `docker-compose.yml` for external
 networks and use the `docker_network` ansible module to pre-create on the host
 it if necessary.
-
-Another way to make yourlabs.compose create external networks is simply to pass
-a networks variable with a comma separated list of network names:
-
-    bigsudo yourlabs.compose home=/home/test networks=web,mail
 
 ### As ansible role
 

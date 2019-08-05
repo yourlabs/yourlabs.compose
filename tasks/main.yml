@@ -21,34 +21,29 @@
   changed_when: false
   register: docker_network_ls
 
-- name: Generate docker-compose.yml and .env based on your input
+- name: Generate docker-compose.yml
   set_fact:
     compose_content: '{{ (compose if not compose.startswith("http") else "docker-compose.yml")|docker_compose_rewrite(hostvars[inventory_hostname], docker_network_ls.stdout_lines) }}'
-    env_content: '{{ (compose if not compose.startswith("http") else "docker-compose.yml")|docker_compose_env_file }}'
+
+- name: Get external networks from compose contents
+  set_fact:
     external_networks: '{{ compose_content|docker_compose_external_networks }}'
 
 - name: Create docker networks
   docker_network:
     name: '{{ item }}'
-  loop: '{{ external_networks + (networks).split(",") }}'
-  when: networks|default(false) or external_networks
+  loop: '{{ external_networks }}'
 
 - name: Upload compose file
   copy:
     content: '{{ compose_content }}'
     dest: '{{ home }}/docker-compose.yml'
 
-- name: Upload .env file
-  copy:
-    content: '{{ env_content }}'
-    dest: '{{ home }}/.env'
-
 - name: Run docker-compose
   docker_compose:
     project_src: '{{ home }}'
     restarted: true
     build: '{{ build|default("no") }}'
-
 
 - name: Show logs
   shell: docker-compose logs
