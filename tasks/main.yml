@@ -55,8 +55,11 @@
     username: '{{ docker_auth_username }}'
     password: '{{ docker_auth_password }}'
     registry: '{{ docker_auth_registry|default("hub.docker.io") }}'
+    config_path: '{{ home }}/.docker/config.json'
 
 - name: Run docker-compose
+  environment:
+    DOCKER_CONFIG: '{{ home }}/.docker'
   docker_compose:
     project_src: '{{ home }}'
     restarted: true
