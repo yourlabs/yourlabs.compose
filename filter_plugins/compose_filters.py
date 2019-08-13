@@ -19,6 +19,9 @@ class FilterModule(object):
         with open(compose_path, 'r') as f:
             config = yaml.safe_load(f)
 
+        # to workaround https://github.com/docker/compose/issues/6833
+        replace = dict()
+
         external_networks = []
         for name, service in config.get('services', {}).items():
             for key, value in hostvars.items():
@@ -36,6 +39,7 @@ class FilterModule(object):
 
                 if value:
                     service[key] = value
+
                 elif key in service:
                     service.pop(key)
 
@@ -48,9 +52,6 @@ class FilterModule(object):
 
                 config.setdefault('networks', {})
                 config['networks'][network] = dict(external=dict(name=network))
-
-            # to workaround https://github.com/docker/compose/issues/6833
-            replace = dict()
 
             environment = service.get('environment', [])
             if isinstance(environment, list):
