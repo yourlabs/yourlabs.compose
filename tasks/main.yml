@@ -106,3 +106,4 @@
   args:
     chdir: '{{ home|default("/tmp") }}'
     stdin: '{{ compose_content if project is defined else None }}'
+    shell: /bin/bash
