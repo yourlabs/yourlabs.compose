@@ -14,12 +14,12 @@
   delegate_to: localhost
   get_url:
     url: '{{ compose }}'
-    dest: '{{ home }}/docker-compose.yml'
+    dest: 'docker-compose.yml'
 
 - name: Set compose fact if compose is URL
   when: compose.startswith('https://') or compose.startswith('http://')
   set_fact:
-    compose: '{{ home }}/docker-compose.yml'
+    compose: 'docker-compose.yml'
 
 - name: Get the docker networks list
   shell: docker network ls --format '{{ "{{ .Name }}" }}'
