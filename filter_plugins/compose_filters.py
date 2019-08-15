@@ -50,6 +50,13 @@ class FilterModule(object):
                 config.setdefault('networks', {})
                 config['networks'][network] = dict(external=dict(name=network))
 
+        if external_networks:
+            # add a default network again because we added an external network
+            # from CLI, otherwise containers wouldn't see each other anymore
+            for name, service in config.get('services', {}).items():
+                service.setdefault('networks', [])
+                service['networks'].append('default')
+
         return yaml.dump(config)
 
     def external_networks(self, compose_content):
