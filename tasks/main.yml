@@ -5,6 +5,7 @@
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
 - name: Make home directory
+  when: home is defined
   file:
     path: '{{ home }}'
     state: directory
@@ -34,7 +35,7 @@
 
 - set_fact: { compose_content: '{{ compose_content.stdout }}' }
 
-- name: Generate docker-compose.yml
+- name: Generate compose content
   set_fact:
     compose_content: '{{ compose_content|docker_compose_rewrite(hostvars[inventory_hostname], docker_network_ls.stdout_lines) }}'
 
@@ -48,6 +49,7 @@
 
 - name: Create directories from io.yourlabs.compose.mkdir
   loop: '{{ external_config.get("mkdir", []) }}'
+  when: home is defined
   file:
     state: directory
     path: '{{ home }}/{{ item.path }}'
@@ -61,6 +63,7 @@
   loop: '{{ external_networks }}'
 
 - name: Upload compose file
+  when: home is defined
   copy:
     content: '{{ compose_content }}'
     dest: '{{ home }}/docker-compose.yml'
@@ -71,17 +74,31 @@
     username: '{{ docker_auth_username }}'
     password: '{{ docker_auth_password }}'
     registry: '{{ docker_auth_registry|default("hub.docker.io") }}'
-    config_path: '{{ home }}/.docker/config.json'
+    config_path: '{{ home if home is defined else ansible_user_dir + "/" + project }}/.docker/config.json'
 
-- name: Run docker-compose
+- name: Restart docker-compose services in home
+  when: home is defined
   environment:
     DOCKER_CONFIG: '{{ home }}/.docker'
   docker_compose:
     project_src: '{{ home }}'
     restarted: true
     build: '{{ build|default("no") }}'
+    state: '{{ state|default("present") }}'
+
+- name: Restart project docker-compose services
+  when: project is defined
+  environment:
+    DOCKER_CONFIG: '{{ ansible_user_dir + "/" + project }}/.docker'
+  docker_compose:
+    definition: '{{ compose_content|yaml_load if project is defined else None }}'
+    project_name: '{{ project }}'
+    restarted: true
+    build: '{{ build|default("no") }}'
+    state: '{{ state|default("present") }}'
 
 - name: Show logs
-  shell: docker-compose logs
+  shell: docker-compose {% if project is defined %}-f - -p {{ project }}{% endif %} logs
   args:
-    chdir: '{{ home }}'
+    chdir: '{{ home|default("/tmp") }}'
+    stdin: '{{ compose_content if project is defined else None }}'

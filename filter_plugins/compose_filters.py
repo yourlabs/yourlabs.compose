@@ -15,6 +15,7 @@ class FilterModule(object):
             'docker_compose_rewrite': self.rewrite,
             'docker_compose_env': self.env,
             'allenv': self.allenv,
+            'yaml_load': self.yaml_load,
         }
 
     def rewrite(self, compose_contents, hostvars, available_networks):
@@ -102,6 +103,9 @@ class FilterModule(object):
 
     def allenv(self, *args):
         return dict(os.environ)
+
+    def yaml_load(self, content):
+        return yaml.safe_load(content)
 
     def env(self, compose_content):
         config = yaml.safe_load(compose_content)
