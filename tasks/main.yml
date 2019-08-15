@@ -36,6 +36,9 @@
   delegate_to: localhost
   register: compose_content
   environment: '{{ true|allenv }}'
+  changed_when: false
+  args:
+    shell: /bin/bash
 
 - set_fact: { compose_content: '{{ compose_content.stdout }}' }
 
