@@ -3,42 +3,29 @@
 Ansible role to deploy a docker-compose.yml into a home directory, best used
 with [bigsudo](https://yourlabs.io/oss/bigsudo).
 
-## Bigsudo brief introduction
-
-This role can be used normally with ansible but it's a bit boring because you
-will have to make sure dependencies are installed and make an inventory
-repository or pass a whole bunch of options on the command line.
-
-If you don't know bigsudo, it's a thin wrapper CLI on top of ansible that
-allows to execute ansible roles with some automation, such as automatic role
-download and recursive role dependencies download, and it will provide a more
-condensed output plugin by default. Basically you can do the following things:
-
-    # first argument is role name or path or git repo url
-    # then pass as many extra vars as you want with varname=value
-    # starting from the first argument that starts with a dash: bigsudo will
-    # forward everything directly to ansible-playbook
-    bigsudo some.role somevar=foo -v
-
-    # by default it runs on localhost, but you can specify a host with @host or
-    # with a user with user@host:
-    bigsudo some.role somevar=foo -v
-
-Refer to bigsudo documentation for details.
+This README describes the features, see TUTORIAL.md for a tutorial with
+opinionated patterns to acheive eXtreme DevOps.
 
 ## Using yourlabs.compose
 
-The purpose of this role is to automate deployment of a docker-compose.yml file
-into a directory on a host, and automate stuff around that.
+The purpose of this role is to automate deployment of a merge of
+docker-compose.yml files into a directory on a host, and automate stuff around
+that.
 
 From within a directory with a docker-compose.yml file, you can deploy it in
 `$host:/home/staging` with the following command:
 
     bigsudo yourlabs.compose home=/home/staging $user@$host
 
-Or, you can specify an alternate path or URL to the docker-compose.yml file to deploy:
+If `$user@$host` is not defined, then it will execute on localhost.
 
-    bigsudo yourlabs.compose home=/home/yourproject compose=http://.../docker-compose.yml
+You can pass several compose files and environment variables will be proxied
+when it generates the final one:
+
+    FOO=bar bigsudo yourlabs.compose \
+        home=/home/staging \
+        compose_django_image=$YOUR_IMAGE \
+        compose=docker-compose.yml,docker-compose.staging.yml
 
 ### Directory generation
 

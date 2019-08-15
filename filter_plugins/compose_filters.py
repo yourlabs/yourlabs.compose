@@ -13,15 +13,12 @@ class FilterModule(object):
             'docker_compose_external_networks': self.external_networks,
             'docker_compose_external_config': self.external_config,
             'docker_compose_rewrite': self.rewrite,
+            'docker_compose_env': self.env,
+            'allenv': self.allenv,
         }
 
-    def rewrite(self, compose_path, hostvars, available_networks):
-        with open(compose_path, 'r') as f:
-            config = yaml.safe_load(f)
-
-        # to workaround https://github.com/docker/compose/issues/6833
-        replace = dict()
-
+    def rewrite(self, compose_contents, hostvars, available_networks):
+        config = yaml.safe_load(compose_contents)
         external_networks = []
         for name, service in config.get('services', {}).items():
             for key, value in hostvars.items():
@@ -53,28 +50,7 @@ class FilterModule(object):
                 config.setdefault('networks', {})
                 config['networks'][network] = dict(external=dict(name=network))
 
-            environment = service.get('environment', [])
-            if isinstance(environment, list):
-                new_environment = []
-                for line in environment:
-                    var = line.split('=')[0]
-                    if var in os.environ:
-                        val = os.getenv(var)
-                        new_environment.append(''.join([
-                            var,
-                            '=',
-                            val.replace('"', '\\"')
-                        ]))
-                        replace[var] = val
-                    else:
-                        new_environment.append(line)
-                service['environment'] = new_environment
-        result = yaml.dump(config)
-
-        for var, val in replace.items():
-            result = result.replace('$' + var, val)
-            result = result.replace('${' + var + '}', val)
-        return result
+        return yaml.dump(config)
 
     def external_networks(self, compose_content):
         config = yaml.safe_load(compose_content)
@@ -87,7 +63,10 @@ class FilterModule(object):
             if not network.get('external', False):
                 continue
 
-            result.append(network['external'].get('name', name))
+            if isinstance(network['external'], dict):
+                result.append(network['external'].get('name', name))
+            else:
+                result.append(name)
 
         return result
 
@@ -96,8 +75,7 @@ class FilterModule(object):
 
         result = dict()
         for name, service in config.get('services', {}).items():
-            for label in service.get('labels', []):
-                var, val = label.split('=')
+            for var, val in service.get('labels', {}).items():
                 if not var.startswith('io.yourlabs.compose.'):
                     continue
                 var = var[len('io.yourlabs.compose.'):]
@@ -114,3 +92,17 @@ class FilterModule(object):
                 else:
                     result[var] = val
         return result
+
+    def allenv(self, *args):
+        return dict(os.environ)
+
+    def env(self, compose_content):
+        config = yaml.safe_load(compose_content)
+
+        result = []
+        for name, service in config.get('services', {}).items():
+            for key, value in service.get('environment', dict()).items():
+                if key in os.environ:
+                    result.append(f'{key}={os.getenv(key)}')
+
+        return '\n'.join(result)

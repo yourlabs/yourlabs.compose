@@ -16,19 +16,35 @@
     url: '{{ compose }}'
     dest: '{{ home }}/docker-compose.yml'
 
+- name: Set compose fact if compose is URL
+  when: compose.startswith('https://') or compose.startswith('http://')
+  set_fact:
+    compose: '{{ home }}/docker-compose.yml'
+
 - name: Get the docker networks list
   shell: docker network ls --format '{{ "{{ .Name }}" }}'
   changed_when: false
   register: docker_network_ls
 
+- name: Generate docker-compose config from compose files
+  shell: docker-compose {% for f in compose.split(",") %}-f {{ lookup('env', 'PWD') + '/' + f }} {% endfor %} config
+  delegate_to: localhost
+  register: compose_content
+  environment: '{{ true|allenv }}'
+
+- set_fact: { compose_content: '{{ compose_content.stdout }}' }
+
 - name: Generate docker-compose.yml
   set_fact:
-    compose_content: '{{ (compose if not compose.startswith("http") else "docker-compose.yml")|docker_compose_rewrite(hostvars[inventory_hostname], docker_network_ls.stdout_lines) }}'
+    compose_content: '{{ compose_content|docker_compose_rewrite(hostvars[inventory_hostname], docker_network_ls.stdout_lines) }}'
+
+- name: Print final compose after rewrite based on Ansible variables
+  debug: var=compose_content
 
 - name: Get external networks and directories from compose contents
   set_fact:
-    external_networks: '{{ compose_content|docker_compose_external_networks }}'
     external_config: '{{ compose_content|docker_compose_external_config }}'
+    external_networks: '{{ compose_content|docker_compose_external_networks }}'
 
 - name: Create directories from io.yourlabs.compose.mkdir
   loop: '{{ external_config.get("mkdir", []) }}'
