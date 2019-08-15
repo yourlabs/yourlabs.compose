@@ -4,6 +4,10 @@
   include_role: name=yourlabs.docker
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
+- include_role: name=yourlabs.pip
+  vars:
+    name: docker-compose
+
 - name: Make home directory
   when: home is defined
   file:
