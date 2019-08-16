@@ -4,7 +4,9 @@
   include_role: name=yourlabs.docker
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
-- include_role: name=yourlabs.pip
+- name: We need docker-compose on localhost because we'll use the config command
+  include_role: name=yourlabs.pip
+  delegate_to: localhost
   vars:
     name: docker-compose
 
