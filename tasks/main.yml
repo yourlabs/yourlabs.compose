@@ -90,8 +90,8 @@
   docker_compose:
     project_src: '{{ home }}'
     restarted: true
-    build: '{{ build|default("no") }}'
     state: '{{ state|default("present") }}'
+    #build: '{{ build|default("no") }}'
 
 - name: Restart project docker-compose services
   when: project is defined
