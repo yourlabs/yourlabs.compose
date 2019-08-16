@@ -51,6 +51,14 @@ class FilterModule(object):
                 config.setdefault('networks', {})
                 config['networks'][network] = dict(external=dict(name=network))
 
+            # Re-set relative directories because docker-compose will have
+            # transformed them to absolute paths
+            if 'volumes' in service:
+                service['volumes'] = [
+                    re.sub('^' + os.getcwd(), '.', volume)
+                    for volume in service['volumes']
+                ]
+
         if external_networks:
             # add a default network again because we added an external network
             # from CLI, otherwise containers wouldn't see each other anymore
