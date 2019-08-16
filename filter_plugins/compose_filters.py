@@ -59,6 +59,12 @@ class FilterModule(object):
                     re.sub('^' + os.getcwd(), '.', volume)
                     for volume in service['volumes']
                 ]
+            # Same for build context
+            if 'context' in service.get('build', {}):
+                service['build']['context'] = re.sub(
+                    '^' + os.getcwd(), '.',
+                    service['build']['context']
+                )
 
         if external_networks:
             # add a default network again because we added an external network
