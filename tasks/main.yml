@@ -5,10 +5,11 @@
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
 - name: We need docker-compose on localhost because we'll use the config command
-  include_role: name=yourlabs.pip
-  delegate_to: localhost
-  vars:
+  pip:
     name: docker-compose
+    state: latest
+    executable: pip3
+  delegate_to: localhost
 
 - name: Make home directory
   when: home is defined
