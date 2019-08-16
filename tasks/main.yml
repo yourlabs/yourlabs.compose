@@ -38,7 +38,7 @@
   environment: '{{ true|allenv }}'
   changed_when: false
   args:
-    shell: /bin/bash
+    executable: /bin/bash
 
 - set_fact: { compose_content: '{{ compose_content.stdout }}' }
 
@@ -109,4 +109,4 @@
   args:
     chdir: '{{ home|default("/tmp") }}'
     stdin: '{{ compose_content if project is defined else None }}'
-    shell: /bin/bash
+    executable: /bin/bash
