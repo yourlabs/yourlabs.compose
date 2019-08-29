@@ -107,6 +107,18 @@
     build: '{{ build|default("no") }}'
     state: '{{ state|default("present") }}'
 
+- name: Create docker-compose definition backup directory
+  when: project is defined
+  file:
+    path: '{{ ansible_user_dir + "/.yourlabs.compose/" + project }}'
+    state: directory
+
+- name: Create docker-compose definition backup
+  when: project is defined
+  file:
+    path: '{{ ansible_user_dir + "/.yourlabs.compose/" + project + "/docker-compose.yml" }}'
+    content: '{{ compose_content }}'
+
 - name: Show logs
   shell: docker-compose {% if project is defined %}-f - -p {{ project }}{% endif %} logs
   args:
