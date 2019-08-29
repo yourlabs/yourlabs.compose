@@ -115,8 +115,8 @@
 
 - name: Create docker-compose definition backup
   when: project is defined
-  file:
-    path: '{{ ansible_user_dir + "/.yourlabs.compose/" + project + "/docker-compose.yml" }}'
+  copy:
+    dest: '{{ ansible_user_dir + "/.yourlabs.compose/" + project + "/docker-compose.yml" }}'
     content: '{{ compose_content }}'
 
 - name: Show logs
