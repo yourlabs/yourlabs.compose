@@ -112,7 +112,7 @@
     state: '{{ state|default("present") }}'
 
 - name: Execute post-deploy commands
-  when: postdeploy is defined and postdeploy.strip()|length
+  when: postdeploy is defined and postdeploy.strip().replace('\n', '')|length
   shell: '{{ postdeploy }}'
   args:
     chdir: '{{ home }}'
