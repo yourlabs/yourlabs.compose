@@ -112,7 +112,7 @@
     state: '{{ state|default("present") }}'
 
 - name: Execute post-deploy commands
-  when: postdeploy is defined
+  when: (postdeploy|default('')).strip()
   shell: '{{ postdeploy }}'
   args:
     chdir: '{{ home }}'
