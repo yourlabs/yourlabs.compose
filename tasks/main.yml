@@ -11,6 +11,11 @@
     executable: pip3
   delegate_to: localhost
 
+- name: Set home for project
+  when: project is defined
+  set_fact:
+    home: '{{ ansible_user_dir + "/.yourlabs.compose/" + project }}'
+
 - name: Make home directory
   when: home is defined
   file:
@@ -71,11 +76,6 @@
   docker_network:
     name: '{{ item }}'
   loop: '{{ external_networks }}'
-
-- name: Set home for project
-  when: project is defined
-  set_fact:
-    home: '{{ ansible_user_dir + "/.yourlabs.compose/" + project }}'
 
 - name: Upload compose file
   copy:
