@@ -98,6 +98,7 @@
     project_src: '{{ home }}'
     restarted: true
     state: '{{ state|default("present") }}'
+    pull: yes
     #build: '{{ build|default("no") }}'
 
 - name: Restart project docker-compose services
