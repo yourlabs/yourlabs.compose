@@ -96,7 +96,6 @@
     DOCKER_CONFIG: '{{ home }}/.docker'
   docker_compose:
     project_src: '{{ home }}'
-    restarted: true
     state: '{{ state|default("present") }}'
     pull: yes
     #build: '{{ build|default("no") }}'
