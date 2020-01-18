@@ -2,7 +2,7 @@
 
 - name: Setup project lifetime
   copy:
-    content: '{{ lookup("pipe", "date +%s") + lifetime }}'
+    content: '{{ lookup("pipe", "date +%s")|int + lifetime|int }}'
     dest: '{{ home }}/removeat'
 
 - name: Install cleaning script

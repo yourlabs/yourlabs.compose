@@ -117,6 +117,10 @@
   args:
     chdir: '{{ home }}'
 
+- name: Schedule stack for removal
+  when: '{{ lifetime|default(False) }}'
+  include_tasks: removal.yml
+
 - name: Show logs
   shell: docker-compose {% if project is defined %}-f - -p {{ project }}{% endif %} logs
   args:
