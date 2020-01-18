@@ -1,0 +1,19 @@
+---
+
+- name: Setup project lifetime
+  copy:
+    content: '{{ lookup("pipe", "date +%s") + lifetime }}'
+    dest: '{{ home }}/removeat'
+
+- name: Install cleaning script
+  copy:
+    src: remove.sh
+    dest: /root/.yourlabs.compose/remove.sh
+    mode: u+rwx,g-rwx,o-rwx
+
+- name: Setup cron
+  include_role: name=yourlabs.timer
+  vars:
+    name: 'yourlabs-compose-cleaner'
+    cmd: /root/.yourlabs.compose/remove.sh
+    oncalendar: '*-*-* *:*:*'

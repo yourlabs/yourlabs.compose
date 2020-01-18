@@ -40,7 +40,7 @@
   register: docker_network_ls
 
 - name: Generate docker-compose config from compose files
-  shell: docker-compose {% for f in compose.split(",") %}-f {{ lookup('env', 'PWD') + '/' + f }} {% endfor %} config
+  shell: docker-compose {% for f in compose.split(",") %}-f {% if not f.startswith('/') %}{{ lookup('env', 'PWD') + '/' }}{% endif %}{{ f }} {% endfor %} config
   delegate_to: localhost
   register: compose_content
   environment: '{{ true|allenv }}'
