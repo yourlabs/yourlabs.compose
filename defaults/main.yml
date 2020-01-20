@@ -1,2 +1,2 @@
 ---
-compose: '{{ lookup("env", "PWD") }}/docker-compose.yml'
+compose: 'docker-compose.yml'

@@ -4,49 +4,51 @@
   include_role: name=yourlabs.docker
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
-- name: We need docker-compose on localhost because we'll use the config command
-  pip:
-    name: docker-compose
-    state: latest
-    executable: pip3
-  delegate_to: localhost
-
-- name: Set home for project
-  when: project is defined
-  set_fact:
-    home: '{{ ansible_user_dir + "/.yourlabs.compose/" + project }}'
-
-- name: Make home directory
-  when: home is defined
-  file:
-    path: '{{ home }}'
+- name: Create temporary build directory to render jinja2
+  register: tempdir
+  tempfile:
     state: directory
+    suffix: build
 
-- name: Download compose file if URL
+- name: Download compose file
   when: compose.startswith('https://') or compose.startswith('http://')
   delegate_to: localhost
-  get_url:
-    url: '{{ compose }}'
-    dest: 'docker-compose.yml'
+  block:
+  - get_url:
+      url: '{{ compose }}'
+      dest: '{{ tempdir.path }}/docker-compose.yml'
+  - set_fact:
+     compose: 'docker-compose.yml'
 
-- name: Set compose fact if compose is URL
-  when: compose.startswith('https://') or compose.startswith('http://')
-  set_fact:
-    compose: 'docker-compose.yml'
-
-- name: Get the docker networks list
-  shell: docker network ls --format '{{ "{{ .Name }}" }}'
-  changed_when: false
-  register: docker_network_ls
+- name: Copy all local compose files
+  when: not (item.startswith('https://') or item.startswith('http://'))
+  loop: '{{ compose.split(",") }}'
+  template:
+    src: '{% if not item.startswith("/") %}{{ lookup("env", "PWD") + "/" }}{% endif %}{{ item }}'
+    dest: '{{ tempdir.path }}'
 
 - name: Generate docker-compose config from compose files
-  shell: docker-compose {% for f in compose.split(",") %}-f {% if not f.startswith('/') %}{{ lookup('env', 'PWD') + '/' }}{% endif %}{{ f }} {% endfor %} config
-  delegate_to: localhost
+  shell: docker-compose {% for f in compose.split(',') %}-f {{ tempdir.path }}/{{ f }}{% endfor %} config
   register: compose_content
   environment: '{{ true|allenv }}'
   changed_when: false
   args:
     executable: /bin/bash
+
+- name: Set home for project
+  when: home is not defined
+  set_fact:
+    home: '{{ ansible_user_dir + "/.yourlabs.compose/" + project|default("default") }}'
+
+- name: Make home directory
+  file:
+    path: '{{ home }}'
+    state: directory
+
+- name: Get the docker networks list
+  shell: docker network ls --format '{{ "{{ .Name }}" }}'
+  changed_when: false
+  register: docker_network_ls
 
 - set_fact: { compose_content: '{{ compose_content.stdout }}' }
 
@@ -64,7 +66,6 @@
 
 - name: Create directories from io.yourlabs.compose.mkdir
   loop: '{{ external_config.get("mkdir", []) }}'
-  when: home is defined
   file:
     state: directory
     path: '{{ home }}/{{ item.path }}'
