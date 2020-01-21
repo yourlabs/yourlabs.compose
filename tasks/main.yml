@@ -97,7 +97,7 @@
   docker_compose:
     project_src: '{{ home }}'
     state: '{{ state|default("present") }}'
-    pull: yes
+    pull: '{{ pull|default("yes") }}'
     build: '{{ build|default("no") }}'
 
 - name: Execute post-deploy commands
