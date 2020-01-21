@@ -91,8 +91,7 @@
     registry: '{{ docker_auth_registry|default("hub.docker.io") }}'
     config_path: '{{ home if home is defined else ansible_user_dir + "/" + project }}/.docker/config.json'
 
-- name: Restart docker-compose services in home
-  when: project is not defined
+- name: Restart docker-compose services
   environment:
     DOCKER_CONFIG: '{{ home }}/.docker'
   docker_compose:
@@ -100,17 +99,6 @@
     state: '{{ state|default("present") }}'
     pull: yes
     build: '{{ build|default("no") }}'
-
-- name: Restart project docker-compose services
-  when: project is defined
-  environment:
-    DOCKER_CONFIG: '{{ ansible_user_dir + "/" + project }}/.docker'
-  docker_compose:
-    definition: '{{ compose_content|yaml_load if project is defined else None }}'
-    project_name: '{{ project }}'
-    restarted: true
-    build: '{{ build|default("no") }}'
-    state: '{{ state|default("present") }}'
 
 - name: Execute post-deploy commands
   when: postdeploy is defined and postdeploy.strip().replace('\n', '')|length
