@@ -111,7 +111,7 @@
   include_tasks: removal.yml
 
 - name: Wait logs
-  shell: docker-compose logs | grep {{ wait_grep }}
+  shell: docker-compose logs | grep '{{ wait_grep }}'
   when: wait_grep is defined
   register: wait_grep_result
   until: not wait_grep_result.rc
@@ -122,7 +122,7 @@
     executable: /bin/bash
 
 - name: Show logs
-  shell: docker-compose  logs
+  shell: docker-compose logs
   args:
     chdir: '{{ home }}'
     executable: /bin/bash
