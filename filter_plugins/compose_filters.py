@@ -56,7 +56,7 @@ class FilterModule(object):
             # transformed them to absolute paths
             if 'volumes' in service:
                 service['volumes'] = [
-                    re.sub('^' + os.getcwd(), '.', volume)
+                    re.sub('^' + hostvars['tempdir']['path'], '.', volume)
                     for volume in service['volumes']
                 ]
             # Same for build context
