@@ -122,9 +122,19 @@
   when: '{{ lifetime|default(False) }}'
   include_tasks: removal.yml
 
-- name: Show logs
-  shell: docker-compose {% if project is defined %}-f - -p {{ project }}{% endif %} logs
+- name: Wait logs
+  shell: docker-compose logs | grep {{ wait_grep }}
+  when: wait_grep is defined
+  register: wait_grep_result
+  until: not wait_grep_result.rc
+  retries: 30
+  delay: 5
   args:
-    chdir: '{{ home|default("/tmp") }}'
-    stdin: '{{ compose_content if project is defined else None }}'
+    chdir: '{{ home }}'
+    executable: /bin/bash
+
+- name: Show logs
+  shell: docker-compose  logs
+  args:
+    chdir: '{{ home }}'
     executable: /bin/bash
