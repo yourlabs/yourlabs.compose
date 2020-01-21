@@ -107,7 +107,7 @@
     chdir: '{{ home }}'
 
 - name: Schedule stack for removal
-  when: '{{ lifetime|default(False) }}'
+  when: lifetime|default(False)
   include_tasks: removal.yml
 
 - name: Wait logs
