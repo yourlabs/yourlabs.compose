@@ -100,12 +100,6 @@
     pull: '{{ pull|default("yes") }}'
     build: '{{ build|default("no") }}'
 
-- name: Execute post-deploy commands
-  when: postdeploy is defined and postdeploy.strip().replace('\n', '')|length
-  shell: '{{ postdeploy }}'
-  args:
-    chdir: '{{ home }}'
-
 - name: Schedule stack for removal
   when: lifetime|default(False)
   include_tasks: removal.yml
@@ -120,6 +114,12 @@
   args:
     chdir: '{{ home }}'
     executable: /bin/bash
+
+- name: Execute post-deploy commands
+  when: postdeploy is defined and postdeploy.strip().replace('\n', '')|length
+  shell: '{{ postdeploy }}'
+  args:
+    chdir: '{{ home }}'
 
 - name: Show logs
   shell: docker-compose logs
