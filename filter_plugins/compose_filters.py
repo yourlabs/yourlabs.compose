@@ -98,14 +98,13 @@ class FilterModule(object):
     def external_config(self, compose_content):
         config = yaml.safe_load(compose_content)
 
-        result = dict()
+        result = dict(mkdir=[])
         for name, service in config.get('services', {}).items():
             for var, val in service.get('labels', {}).items():
                 if not var.startswith('io.yourlabs.compose.'):
                     continue
                 var = var[len('io.yourlabs.compose.'):]
                 if var == 'mkdir':
-                    result.setdefault(var, [])
                     parts = val.split(':')
                     for path in parts[0].split(','):
                         result[var].append(dict(
