@@ -21,6 +21,7 @@ class FilterModule(object):
 
     def rewrite(self, compose_contents, hostvars, available_networks):
         config = yaml.safe_load(compose_contents)
+
         external_networks = []
         for name, service in config.get('services', {}).items():
             for key, value in hostvars.items():
@@ -37,8 +38,9 @@ class FilterModule(object):
                     value += service[key]
 
                 if value:
+                    if value.startswith('[') or value.startswith('{'):
+                        value = json.loads(value)
                     service[key] = value
-
                 elif key in service:
                     service.pop(key)
 
