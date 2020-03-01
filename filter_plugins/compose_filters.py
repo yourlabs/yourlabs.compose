@@ -103,7 +103,7 @@ class FilterModule(object):
                     continue
                 var = var[len('io.yourlabs.compose.'):]
                 if var == 'mkdir':
-                    result[var] = []
+                    result.setdefault(var, [])
                     parts = val.split(':')
                     for path in parts[0].split(','):
                         result[var].append(dict(
