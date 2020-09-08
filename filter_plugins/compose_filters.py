@@ -20,6 +20,10 @@ class FilterModule(object):
         }
 
     def rewrite(self, compose_contents, hostvars, available_networks):
+        for key, value in os.environ.items():
+            # convert all ${VARS}, particularely those that are in label keys
+            compose_contents = compose_contents.replace('${' + key + '}', value)
+
         config = yaml.safe_load(compose_contents)
 
         external_networks = []
