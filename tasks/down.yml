@@ -12,4 +12,5 @@
     remove_images: all
     remove_orphans: yes
     remove_volumes: yes
+    services: '{{ services|default("") }}'
     project_src: '{{ home }}'
