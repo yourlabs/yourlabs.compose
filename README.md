@@ -22,6 +22,8 @@ This role tests itself and you can start copying:
 
 You need to change:
 
+- .gitlab-ci.yml: there are a few `# UNCOMMENT ABOVE AND REMOVE BELOW`
+  comments, do as it says, so that you use yourlabs/ansible
 - ci.yourlabs.io with your server in .gitlab-ci.yml
 - Gitlab CI variable to set: `$CI_SSH_KEY`, it should contain an ed25510
   private key, you can create one with: `ssh-keygen -t ed25519 -a 100`
