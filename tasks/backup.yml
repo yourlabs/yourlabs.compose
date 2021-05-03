@@ -4,14 +4,15 @@
   package: name=restic,lftp
 
 - name: Backup encrypt file exists?
-  vars:
-    pwd_alias: "{{ lookup('password', './{{ home.split('/')[-1] }}_restic_password_copy length=15') }}"
+  register: stat_backup_password
   stat:
     path: '{{ home }}/.restic_password'
 
 - name: Installer le backup password
-  file:
-    path: '{{ home }}/.restic_password'
+  when: not stat_backup_password.stat.exists
+  template:
+    content: "{{ lookup('password', './{{ home.split('/')[-1] }}_restic_password_copy length=15') }}"
+    dest: '{{ home }}/.restic_password'
     mode: '0400'
 
 - name: Initialiser le repo de backup
