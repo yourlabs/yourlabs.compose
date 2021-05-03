@@ -28,7 +28,8 @@ You need to change:
 - Gitlab CI variable to set: `$CI_SSH_KEY`, it should contain an ed25510
   private key, you can create one with: `ssh-keygen -t ed25519 -a 100`
 - Dockerfile: change the command argument `--module=wsgi:application` with the
-  appropriate path to your wsgi application, and uncomment what you want
+  appropriate path to your wsgi application, remove bigsudo setup if you want
+  and uncomment what you want
 
 Then, you can customize all you want!
 

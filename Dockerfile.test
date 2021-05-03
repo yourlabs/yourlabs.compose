@@ -1,5 +1,0 @@
-FROM .
-RUN pacman -S ansible
-RUN pip install bigsudo
-COPY . /role
-RUN bigsudo roleinstall /role

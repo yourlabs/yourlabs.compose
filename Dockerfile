@@ -13,6 +13,11 @@ RUN pip3 install -Ur /app/requirements.txt
 
 COPY . /app/
 
+# REMOVE THE FOLLOWING
+RUN pacman -S ansible
+RUN pip install bigsudo
+RUN bigsudo roleinstall /app
+
 # Build frontend in /app/public:
 # RUN DEBUG= ./manage.py ryzom_bundle
 # RUN DEBUG= ./manage.py collectstatic --noinput
