@@ -26,7 +26,7 @@ build-test:
     - bigsudo yourlabs.compose
       compose_django_build=
       compose_django_image=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-      wait_grep=uwsgi
+      wait_grep=spawned.uWSGI.worker.1
       $DEPLOY
       deploy@$HOST
       | tee deploy.log
