@@ -28,9 +28,9 @@ EXPOSE 8000
 #   && uwsgi \
 
 CMD /usr/bin/bash -euxc "uwsgi \
-  --http-socket=0.0.0.0:8000 \
-  --chdir=/app \
   --spooler=/spooler/email \
+  --plugin=python \
+  --module=wsgi:application \
 
   --route '^/static/.* addheader:Cache-Control: public, max-age=7776000' \
   --route '^/js|css|fonts|images|icons|favicon.png/.* addheader:Cache-Control: public, max-age=7776000' \
@@ -38,6 +38,8 @@ CMD /usr/bin/bash -euxc "uwsgi \
   --static-map /media=/app/media \
   --static-gzip-all \
 
+  --http-socket=0.0.0.0:8000 \
+  --chdir=/app \
   --chmod=666 \
   --disable-write-exception \
   --enable-threads \
@@ -49,9 +51,7 @@ CMD /usr/bin/bash -euxc "uwsgi \
   --master \
   --max-requests=100 \
   --mime-file /etc/mime.types \
-  --module=wsgi:application \
   --offload-threads '%k' \
-  --plugin=python \
   --post-buffering=8192 \
   --processes=6 \
   --spooler-chdir=/app \
