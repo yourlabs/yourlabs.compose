@@ -21,6 +21,7 @@ build-test:
     - set -x
     - export HOST=$(echo $CI_ENVIRONMENT_URL | sed s@^.*://@@)
     - export PROTO=$(echo $CI_ENVIRONMENT_URL | sed s@:.*@@)
+    - export CI_PROJECT_SLUG=$(echo $CI_PROJECT_NAME | sed s@[/.]@-@g)
     - export ANSIBLE_HOST_KEY_CHECKING=False
     - bigsudo yourlabs.compose
       compose_django_build=
