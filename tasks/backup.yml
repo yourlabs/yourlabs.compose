@@ -15,6 +15,11 @@
     dest: '{{ home }}/.restic_password'
     mode: '0400'
 
+- name: Copy restic backup password locally for security
+  fetch:
+    src: '{{ home }}/.restic_password'
+    dest: '{{ home.split("/")[-1] }}_RESTIC_PASSWORD'
+
 - name: Initialiser le repo de backup
   register: restic_init
   changed_when: "'created restic repo' in restic_init['stdout']"
