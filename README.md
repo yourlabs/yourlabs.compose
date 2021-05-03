@@ -6,7 +6,33 @@ with [bigsudo](https://yourlabs.io/oss/bigsudo).
 This README describes the features, see TUTORIAL.md for a tutorial with
 opinionated patterns to acheive eXtreme DevOps.
 
-## Using yourlabs.compose
+## Example
+
+This role tests itself and you can start copying:
+
+- Dockerfile: will work by default for a CRUDLFA+ project, offer compressed
+  and cached static file service and a spooler.
+- .gitlab-ci.yml: builds and pushes docker image to the GitLab image registry,
+  provides a deployment job YAML template (macro), as well as 3 example
+  deployment configurations for different deployment use cases
+- docker-compose.yml: for local and ephemeral deployments
+- docker-compose.persist.yml: addon to use for persistent deployments, ie.
+  are specified in .gitlab-ci.yml
+
+You need to change:
+
+- ci.yourlabs.io with your server in .gitlab-ci.yml
+- Gitlab CI variable to set: `$CI_SSH_KEY`, it should contain an ed25510
+  private key, you can create one with: `ssh-keygen -t ed25519 -a 100`
+- Dockerfile: change the command argument `--module=wsgi:application` with the
+  appropriate path to your wsgi application, and uncomment what you want
+
+Then, you can customize all you want!
+
+You may also get more general and conceptual description on the [blog
+article about eXtreme DevOps](https://yourlabs.org/posts/2020-02-08-bigsudo-extreme-devops-hacking-operations/)
+
+## Documentation of features
 
 The purpose of this role is to automate deployment of a merge of
 docker-compose.yml files into a directory on a host, and automate stuff around

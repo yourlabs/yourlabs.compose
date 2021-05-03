@@ -1,0 +1,80 @@
+build:
+  image: docker:dind
+  stage: build
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+
+build-test:
+  image:
+    name: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  stage: test
+  script:
+    - pip install pytest pytest-cov pytest-django
+    - PATH=~/.local/bin:$PATH pytest -vv
+
+.deploy: &deploy
+  before_script:
+    - mkdir -p ~/.ssh; echo "$CI_SSH_KEY" > ~/.ssh/id_ed25519; chmod 700 ~/.ssh; chmod 600 ~/.ssh/*
+  script:
+    - set -x
+    - export HOST=$(echo $CI_ENVIRONMENT_URL | sed s@^.*://@@)
+    - export PROTO=$(echo $CI_ENVIRONMENT_URL | sed s@:.*@@)
+    - export ANSIBLE_HOST_KEY_CHECKING=False
+    - bigsudo yourlabs.compose
+      compose_django_build=
+      compose_django_image=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+      wait_grep=uwsgi
+      $DEPLOY
+      deploy@$HOST
+      | tee deploy.log
+    - grep unreachable=0 deploy.log &> /dev/null
+    - grep failed=0 deploy.log &> /dev/null
+
+# ephemeral branch deployment
+review-deploy:
+  image: yourlabs/ansible
+  stage: test
+  environment:
+    name: test/$CI_COMMIT_REF_NAME
+    url: http://${CI_ENVIRONMENT_SLUG}.$CI_PROJECT_NAME.ci.yourlabs.io
+  variables:
+    DEPLOY: >
+      compose=docker-compose.yml
+      lifetime=86400
+      project=$CI_ENVIRONMENT_SLUG
+  except:
+  - tags
+  - master
+  <<: *deploy
+
+# permanent branch deployment:
+master-deploy:
+  image: yourlabs/ansible
+  stage: deploy
+  environment:
+    name: master
+    url: https://master.$CI_PROJECT_NAME.ci.yourlabs.io
+  variables:
+    DEPLOY: >
+      compose=docker-compose.yml,docker-compose.persist.yml
+      home=/home/$CI_PROJECT_NAME-master
+  only:
+    refs:
+      - master
+  <<: *deploy
+
+# latest tagged release permanent deployment:
+demo:
+  image: yourlabs/ansible
+  stage: deploy
+  environment:
+    name: demo
+    url: https://demo.$CI_PROJECT_NAME.ci.yourlabs.io
+  variables:
+    DEPLOY: >
+      compose=docker-compose.yml,docker-compose.persist.yml
+      home=/home/$CI_PROJECT_NAME-demo
+  only: [tags]
+  <<: *deploy
