@@ -99,7 +99,7 @@
     DOCKER_CONFIG: '{{ home }}/.docker'
   docker_compose:
     project_src: '{{ home }}'
-    state: '{{ "present" }}'
+    state: present
     pull: '{{ pull|default("no") }}'
     build: '{{ build|default("no") }}'
 
@@ -139,11 +139,3 @@
     chdir: '{{ home }}'
 
 - include: check.yml
-
-- name: Logs du pod docker
-  shell: docker-compose logs --tail=200
-  tags: check,update
-  failed_when: false
-  changed_when: false
-  args:
-    chdir: '{{ home }}'

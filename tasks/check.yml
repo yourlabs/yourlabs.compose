@@ -45,8 +45,22 @@
         Les logs sont disponnibles sur {{ lookup("env", "CI_JOB_URL") }}
         {% endif %}
 
+  - name: Stop services
+    environment:
+      DOCKER_CONFIG: '{{ home }}/.docker'
+    docker_compose:
+      project_src: '{{ home }}'
+      state: stopped
+      pull: '{{ pull|default("no") }}'
+      build: '{{ build|default("no") }}'
+
   - name: Mise en échec de la commande de déploiement
-    fail: msg="Le déploiement n'est pas accessible en HTTP"
+    fail:
+      msg: >
+        Failed curl {{ url }}
+        Rollback in ssh by running ./rollback.sh, once to see the latest
+        backup tag, then run ./rollback.sh again with the choosen backup tag
+        as argument
 
   always:
   - name: Logs du load balancer
@@ -54,3 +68,11 @@
     tags: check,update
     failed_when: false
     changed_when: false
+
+  - name: Logs du pod docker
+    shell: docker-compose logs --tail=300
+    tags: check,update
+    failed_when: false
+    changed_when: false
+    args:
+      chdir: '{{ home }}'
