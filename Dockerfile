@@ -14,7 +14,7 @@ RUN pip3 install -Ur /app/requirements.txt
 COPY . /app/
 
 # REMOVE THE FOLLOWING
-RUN pacman -S ansible
+RUN pacman --noconfirm -S ansible
 RUN pip install bigsudo
 RUN bigsudo roleinstall /app
 
