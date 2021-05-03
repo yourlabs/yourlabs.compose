@@ -45,6 +45,9 @@
     path: '{{ home }}'
     state: directory
 
+- include: backup.yml
+  when: lookup('env', 'PROTO', '') == 'https'
+
 - name: Get the docker networks list
   shell: docker network ls --format '{{ "{{ .Name }}" }}'
   changed_when: false
