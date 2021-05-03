@@ -45,10 +45,10 @@
     path: '{{ home }}'
     state: directory
 
-- debug: msg='{{ lookup("env", "PROTO", "") == "https" }}'
+- debug: msg='{{ lookup("env", "PROTO")|default("http") == "https" }}'
 
 - include: backup.yml
-  when: lookup('env', 'PROTO', '') == 'https'
+  when: lookup('env', 'PROTO')|default('http') == 'https'
 
 - name: Get the docker networks list
   shell: docker network ls --format '{{ "{{ .Name }}" }}'

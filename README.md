@@ -43,6 +43,7 @@ Other bigsudo commands you may use:
 You may also get more general and conceptual description on the [blog
 article about eXtreme DevOps](https://yourlabs.org/posts/2020-02-08-bigsudo-extreme-devops-hacking-operations/)
 
+
 ## Documentation of features
 
 The purpose of this role is to automate deployment of a merge of
