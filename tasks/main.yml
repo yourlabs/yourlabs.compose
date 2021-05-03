@@ -45,6 +45,8 @@
     path: '{{ home }}'
     state: directory
 
+- debug: msg='{{ lookup("env", "PROTO", "") == "https" }}'
+
 - include: backup.yml
   when: lookup('env', 'PROTO', '') == 'https'
 
