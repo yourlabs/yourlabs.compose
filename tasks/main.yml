@@ -104,6 +104,20 @@
   when: lifetime|default(False)
   include_tasks: removal.yml
 
+- name: Configuration des logrotates
+  copy:
+    dest: /etc/logrotate.d/yourlabs.compose
+    content: |
+      /home/*/log/*.log {
+        daily
+        missingok
+        rotate 36
+        compress
+        notifempty
+        create 0640 1000 1000
+        sharedscripts
+      }
+
 - name: Wait logs
   shell: docker-compose logs | grep '{{ wait_grep }}'
   when: wait_grep is defined
