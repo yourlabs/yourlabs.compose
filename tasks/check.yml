@@ -1,0 +1,56 @@
+---
+
+- name: Generation d'un identifiant unique de test
+  set_fact: test_id={{ ansible_date_time|to_uuid }}
+  tags: check,update
+
+- name: Generation de l'URL de test à l'aide de l'identifiant unique
+  set_fact: url="{{ lookup('env', 'PROTO') or 'http' }}://{% if lookup('env', 'BASICAUTH_ENABLE') %}dev:dev@{% endif %}{{ lookup('env', 'HOST') }}/?test={{ test_id }}"
+  tags: check,update
+
+- block:
+  - name: Boucle curl d'une minute dans l'attente que le service démarre
+    register: url_verify
+    retries: '{{ timeout|default(60) }}'
+    delay: 1
+    until: url_verify.failed == false
+    tags: check,update
+    changed_when: false
+    shell: curl --fail -L -I {{ url }} | grep 200
+
+  - name: Notification Slack du succès de la vérification
+    when: lookup("env", "SLACK_TOKEN")
+    tags: update
+    slack:
+      token: '{{ lookup("env", "SLACK_TOKEN") }}'
+      color: good
+      channel: tech-discussion
+      msg: |
+        Déploiement verifié sur {{ lookup("env", "HOST") }}
+        pour le commit {{ lookup("env", "CI_COMMIT_MESSAGE") }}
+        par {{ lookup("env", "CI_COMMIT_AUTHOR") }}
+        dans {{ lookup("env", "CI_JOB_URL") }}
+
+  rescue:
+  - name: Notification Slack de l'échec de la vérification
+    when: lookup("env", "SLACK_TOKEN")
+    tags: update
+    slack:
+      token: '{{ lookup("env", "SLACK_TOKEN") }}'
+      color: danger
+      channel: tech
+      msg: |
+        {{ lookup('env', 'HOST') }} en échec !
+        {% if lookup("env", "CI_JOB_URL") %}
+        Les logs sont disponnibles sur {{ lookup("env", "CI_JOB_URL") }}
+        {% endif %}
+
+  - name: Mise en échec de la commande de déploiement
+    fail: msg="Le déploiement n'est pas accessible en HTTP"
+
+  always:
+  - name: Logs du load balancer
+    shell: docker logs --since=5m traefik 2>&1 | grep -C1 "{{ test_id }}"
+    tags: check,update
+    failed_when: false
+    changed_when: false
