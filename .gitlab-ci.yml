@@ -35,9 +35,7 @@ build-test:
 
 # ephemeral branch deployment
 review-deploy:
-  # image: yourlabs/ansible
-  # UNCOMMENT ABOVE AND REMOVE BELOW
-  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  image: yourlabs/ansible
   stage: test
   environment:
     name: test/$CI_COMMIT_REF_NAME
@@ -54,9 +52,7 @@ review-deploy:
 
 # permanent branch deployment:
 master-deploy:
-  # image: yourlabs/ansible
-  # UNCOMMENT ABOVE AND REMOVE BELOW
-  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  image: yourlabs/ansible
   stage: deploy
   environment:
     name: master
@@ -72,9 +68,7 @@ master-deploy:
 
 # latest tagged release permanent deployment:
 demo:
-  # image: yourlabs/ansible
-  # UNCOMMENT ABOVE AND REMOVE BELOW
-  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  image: yourlabs/ansible
   stage: deploy
   environment:
     name: demo
