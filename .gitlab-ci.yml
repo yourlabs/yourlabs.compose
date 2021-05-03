@@ -3,12 +3,13 @@ build:
   stage: build
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+    # - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
+    # UNCOMMENT ABOVE AND REMOVE BELOW
+    - docker build -f Dockerfile.bigsudo -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
 build-test:
-  image:
-    name: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   stage: test
   script:
     - pip install pytest pytest-cov pytest-django
@@ -36,7 +37,9 @@ build-test:
 
 # ephemeral branch deployment
 review-deploy:
-  image: yourlabs/ansible
+  # image: yourlabs/ansible
+  # UNCOMMENT ABOVE AND REMOVE BELOW
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   stage: test
   environment:
     name: test/$CI_COMMIT_REF_NAME
@@ -53,7 +56,9 @@ review-deploy:
 
 # permanent branch deployment:
 master-deploy:
-  image: yourlabs/ansible
+  # image: yourlabs/ansible
+  # UNCOMMENT ABOVE AND REMOVE BELOW
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   stage: deploy
   environment:
     name: master
@@ -69,7 +74,9 @@ master-deploy:
 
 # latest tagged release permanent deployment:
 demo:
-  image: yourlabs/ansible
+  # image: yourlabs/ansible
+  # UNCOMMENT ABOVE AND REMOVE BELOW
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   stage: deploy
   environment:
     name: demo
