@@ -1,2 +1,2 @@
 FROM yourlabs/ansible
-RUN bigsudo roleinstall .
+COPY . /root/.ansible/roles/yourlabs.compose
