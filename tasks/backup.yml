@@ -1,0 +1,67 @@
+---
+
+- name: Installer restic, lftp
+  package: name=restic,lftp
+
+- name: Backup encrypt file exists?
+  vars:
+    pwd_alias: "{{ lookup('password', './{{ home.split('/')[-1] }}_restic_password_copy length=15') }}"
+  stat:
+    path: '{{ home }}/.restic_password'
+
+- name: Installer le backup password
+  file:
+    path: '{{ home }}/.restic_password'
+    mode: '0400'
+
+- name: Initialiser le repo de backup
+  register: restic_init
+  changed_when: "'created restic repo' in restic_init['stdout']"
+  shell: |
+    export RESTIC_PASSWORD_FILE={{ home }}/.restic_password
+    export RESTIC_REPOSITORY={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic' }}
+    test -d $RESTIC_REPOSITORY || restic init
+
+- register: stat_backup
+  stat:
+    path: '{{ home }}/backup.sh'
+
+- name: Executer le script de backup
+  when: stat_backup.stat.exists
+  shell: '{{ home }}/backup.sh'
+
+- name: Installer le script de backup
+  template:
+    src: backup.sh
+    dest: '{{ home }}/backup.sh'
+    mode: 0700
+
+- name: Installer le script de politique de retention
+  template:
+    src: prune.sh
+    dest: '{{ home }}/prune.sh'
+    mode: 0700
+
+- name: Installer le script de restoration de backup
+  template:
+    src: restore.sh
+    dest: '{{ home }}/restore.sh'
+    mode: 0700
+
+- name: Installer le cron de backup
+  include_role: name=yourlabs.timer
+  vars:
+    name: '{{ home.split("/")[-1] }}-backup'
+    cmd: '{{ home }}/backup.sh'
+    chdir: '{{ home }}'
+    oncalendar: '*-*-* 23:00:00'
+    env:
+      BACKUP_FORCE: 1
+
+- name: Installer le cron de politique de retention
+  include_role: name=yourlabs.timer
+  vars:
+    name: '{{ home.split("/")[-1] }}-prune'
+    cmd: '{{ home }}/prune.sh'
+    chdir: '{{ home }}'
+    oncalendar: '*-*-* 04:00:00'
