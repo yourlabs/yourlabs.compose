@@ -1,2 +1,0 @@
-FROM yourlabs/ansible
-COPY . /root/.ansible/roles/yourlabs.compose
