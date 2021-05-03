@@ -29,6 +29,14 @@ You need to change:
 
 Then, you can customize all you want!
 
+Other bigsudo commands you may use:
+
+- enable a backup systemd timer with: `bigsudo yourlabs.compose backup
+  home=/home/$CI_PROJECT_NAME-$CI_ENVIRONMENT_NAME`
+- on review deployment CI server, to remove unused images and volumes and networks:
+  `bigsudo yourlabs.docker prunecron @ci.your.host`, this prevents the
+  review-deployments from filling up disk space
+
 You may also get more general and conceptual description on the [blog
 article about eXtreme DevOps](https://yourlabs.org/posts/2020-02-08-bigsudo-extreme-devops-hacking-operations/)
 

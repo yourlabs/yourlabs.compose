@@ -59,7 +59,7 @@ master-deploy:
   variables:
     DEPLOY: >
       compose=docker-compose.yml,docker-compose.persist.yml
-      home=/home/$CI_PROJECT_NAME-master
+      home=/home/$CI_PROJECT_NAME-$CI_ENVIRONMENT_NAME
   only:
     refs:
       - master
@@ -75,6 +75,6 @@ demo:
   variables:
     DEPLOY: >
       compose=docker-compose.yml,docker-compose.persist.yml
-      home=/home/$CI_PROJECT_NAME-demo
+      home=/home/$CI_PROJECT_NAME-$CI_ENVIRONMENT_NAME
   only: [tags]
   <<: *deploy
