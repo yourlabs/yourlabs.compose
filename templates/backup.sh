@@ -19,13 +19,6 @@ export RESTIC_PASSWORD_FILE={{ home }}/.restic_password
 set -x
 export RESTIC_REPOSITORY={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic' }}
 
-backup=""
-
-if docker-compose exec -T django env | grep GIT_COMMIT; then
-  export $(docker-compose exec -T django env | grep -o 'GIT_COMMIT=[a-z0-9]*')
-  backup="$backup --tag $GIT_COMMIT"
-fi
-
 docker-compose up -d postgres
 until test -S {{ home }}/postgres/run/.s.PGSQL.5432; do
     sleep 1
@@ -33,14 +26,15 @@ done
 
 sleep 3 # ugly wait until db starts up, socket waiting aint enough
 
-docker-compose exec -T postgres pg_dumpall -U django -c -f /dump/data.dump
+backup="{{ restic_backup|default('') }}"
 
+docker-compose exec -T postgres pg_dumpall -U django -c -f /dump/data.dump
 docker-compose logs &> log/docker.log || echo "Couldn't get logs from instance"
 
-restic backup $backup docker-compose.yml log mrsattachments postgres/dump/data.dump
+restic backup $backup docker-compose.yml log postgres/dump/data.dump {{ restic_backup|default('') }}
 
 {% if lookup('env', 'LFTP_DSN') %}
 lftp -c 'set ssl:check-hostname false;connect {{ lookup("env", "LFTP_DSN") }}; mkdir -p {{ home.split("/")[-1] }}; mirror -Rve {{ home }}/restic {{ home.split("/")[-1] }}/restic'
 {% endif %}
 
-docker-compose exec -T postgres rm -rf /dump/data.dump
+rm -rf {{ home }}/dump/data.dump
