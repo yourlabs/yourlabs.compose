@@ -16,8 +16,9 @@ This role tests itself and you can start copying:
   provides a deployment job YAML template (macro), as well as 3 example
   deployment configurations for different deployment use cases
 - docker-compose.yml: for local and ephemeral deployments
+- docker-compose.traefik.yml: for yourlabs.traefik support
 - docker-compose.persist.yml: addon to use for persistent deployments, ie.
-  are specified in .gitlab-ci.yml
+  are specified in .gitlab-ci.yml, requires docker-compose.traefik.yml
 
 You need to change:
 
