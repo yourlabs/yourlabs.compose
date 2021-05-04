@@ -8,6 +8,8 @@
   set_fact: url="{{ lookup('env', 'PROTO') or 'http' }}://{% if lookup('env', 'BASICAUTH_ENABLE') %}dev:dev@{% endif %}{{ lookup('env', 'HOST') }}/?test={{ test_id }}"
   tags: check,update
 
+- debug: msg="Checking URL {{ url }}"
+
 - block:
   - name: Boucle curl d'une minute dans l'attente que le service démarre
     register: url_verify

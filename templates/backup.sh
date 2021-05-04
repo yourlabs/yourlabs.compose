@@ -4,9 +4,9 @@ if [ -z "${BACKUP_FORCE-}" ]; then
   echo This script is not safe to run multiple instances at the same time
   echo Starting through systemctl and forwarding journalctl
   set -eux
-  journalctl -fu {{ home.split("/")[-1] }}-backup &
+  journalctl -fu backup-{{ home.split("/")[-1] }} &
   journalpid="$!"
-  systemctl start --wait {{ home.split("/")[-1] }}-backup
+  systemctl start --wait backup-{{ home.split("/")[-1] }}
   retcode="$?"
   kill $journalpid
   exit $retcode
@@ -20,7 +20,7 @@ set -x
 export RESTIC_REPOSITORY={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic' }}
 
 docker-compose up -d postgres
-until test -S {{ home }}/postgres/run/.s.PGSQL.5432; do
+until docker-compose exec -T postgres sh -c "test -S /var/run/postgresql/.s.PGSQL.5432"; do
     sleep 1
 done
 
@@ -31,10 +31,14 @@ backup="{{ restic_backup|default('') }}"
 docker-compose exec -T postgres pg_dumpall -U django -c -f /dump/data.dump
 docker-compose logs &> log/docker.log || echo "Couldn't get logs from instance"
 
-restic backup $backup docker-compose.yml log postgres/dump/data.dump {{ restic_backup|default('') }}
+restic backup $backup docker-compose.yml log ./dump/data.dump {{ restic_backup|default('') }}
 
 {% if lookup('env', 'LFTP_DSN') %}
 lftp -c 'set ssl:check-hostname false;connect {{ lookup("env", "LFTP_DSN") }}; mkdir -p {{ home.split("/")[-1] }}; mirror -Rve {{ home }}/restic {{ home.split("/")[-1] }}/restic'
 {% endif %}
 
+echo Backup complete, cleaning old backups
+
 rm -rf {{ home }}/dump/data.dump
+
+./prune.sh

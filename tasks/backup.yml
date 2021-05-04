@@ -57,17 +57,9 @@
 - name: Installer le cron de backup
   include_role: name=yourlabs.timer
   vars:
-    name: '{{ home.split("/")[-1] }}-backup'
+    name: 'backup-{{ home.split("/")[-1] }}'
     cmd: '{{ home }}/backup.sh'
     chdir: '{{ home }}'
     oncalendar: '*-*-* 23:00:00'
     env:
       BACKUP_FORCE: 1
-
-- name: Installer le cron de politique de retention
-  include_role: name=yourlabs.timer
-  vars:
-    name: '{{ home.split("/")[-1] }}-prune'
-    cmd: '{{ home }}/prune.sh'
-    chdir: '{{ home }}'
-    oncalendar: '*-*-* 04:00:00'

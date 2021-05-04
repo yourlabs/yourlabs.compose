@@ -21,7 +21,7 @@ until test -S {{ home }}/postgres/run/.s.PGSQL.5432; do
     sleep 1
 done
 sleep 3 # ugly wait until db starts up, socket waiting aint enough
-docker-compose exec -T postgres psql -d mrs -U django -f /dump/data.dump
+docker-compose exec -T postgres psql -d django -U django -f /dump/data.dump
 docker-compose up -d
 retcode=$?
 docker-compose logs -f &
