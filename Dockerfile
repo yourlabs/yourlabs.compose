@@ -14,9 +14,10 @@ RUN pip3 install -Ur /app/requirements.txt
 COPY . /app/
 
 # REMOVE THE FOLLOWING
-RUN pip install --user bigsudo
-RUN pacman --noconfirm -S ansible
-RUN /root/.local/bin/bigsudo roleinstall /app
+RUN pip install bigsudo
+RUN pip uninstall -y ansible
+RUN pacman -S --noconfirm --overwrite="*" ansible
+RUN bigsudo roleinstall /app
 
 # Build frontend in /app/public:
 # RUN DEBUG= ./manage.py ryzom_bundle
