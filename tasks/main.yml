@@ -4,6 +4,11 @@
   include_role: name=yourlabs.docker
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
+- name: Install docker-compose
+  package:
+    name: docker-compose
+    state: present
+
 - name: Create temporary build directory to render jinja2
   register: tempdir
   tempfile:
@@ -48,7 +53,7 @@
 - debug: msg='{{ lookup("env", "PROTO")|default("http") == "https" }}'
 
 - include: backup.yml
-  when: lookup('env', 'PROTO')|default('http') == 'https'
+  when: project is not defined
 
 - name: Get the docker networks list
   shell: docker network ls --format '{{ "{{ .Name }}" }}'

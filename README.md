@@ -147,3 +147,34 @@ it in more tasks in your repo:
         compose_django_build:
         compose_django_networks:
         - web
+
+## Backups
+
+Automated backups are enabled for deployments with a `home` argument. It will
+setup 3 scripts in /home:
+
+- ./backup.sh: create a local dump and backup in restic
+- ./restore.sh: list restic snapshots, run it with a restic
+  snapshot hash as argument to restore the snapshot
+- ./prune.sh: remove old backups
+
+It will create 1 systemd services and systemd timer,
+
+- backup-PROJECTNAME.service
+- backup-PROJECTNAME.timer
+
+## Hacking
+
+To develop this role on localhost:
+
+```
+# build the image
+docker build -t test .
+
+# run bigsudo as such:
+bigsudo . home=/tmp/test compose_django_build= compose_django_image=test compose=docker-compose.yml,docker-compose.persist.yml
+```
+
+Note that it will always try to run the backup script prior to updating it. If
+you change it, you need to rm backup.sh prior to running yourlabs.compose again
+so that it updates backup.sh.

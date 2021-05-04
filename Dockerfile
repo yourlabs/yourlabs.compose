@@ -14,8 +14,8 @@ RUN pip3 install -Ur /app/requirements.txt
 COPY . /app/
 
 # REMOVE THE FOLLOWING
-RUN pacman --noconfirm -S ansible
 RUN pip install bigsudo
+RUN pacman -S --noconfirm ansible
 RUN bigsudo roleinstall /app
 
 # Build frontend in /app/public:
@@ -36,13 +36,11 @@ CMD /usr/bin/bash -euxc "uwsgi \
   --spooler=/spooler/email \
   --plugin=python \
   --module=wsgi:application \
-
   --route '^/static/.* addheader:Cache-Control: public, max-age=7776000' \
   --route '^/js|css|fonts|images|icons|favicon.png/.* addheader:Cache-Control: public, max-age=7776000' \
   --static-map /static=/app/public \
   --static-map /media=/app/media \
   --static-gzip-all \
-
   --http-socket=0.0.0.0:8000 \
   --chdir=/app \
   --chmod=666 \
