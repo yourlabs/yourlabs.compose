@@ -7,7 +7,7 @@
 - name: Install docker-compose
   package:
     name: docker-compose
-    state: present
+    state: latest
 
 - name: Create temporary build directory to render jinja2
   register: tempdir
