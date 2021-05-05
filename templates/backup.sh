@@ -20,7 +20,10 @@ set -x
 export RESTIC_REPOSITORY={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic' }}
 
 docker-compose up -d postgres
+a=0
 until docker-compose exec -T postgres sh -c "test -S /var/run/postgresql/.s.PGSQL.5432"; do
+    ((a++))
+    [[ $a -eq 100 ]] && exit 1
     sleep 1
 done
 
