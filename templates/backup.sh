@@ -28,7 +28,7 @@ sleep 3 # ugly wait until db starts up, socket waiting aint enough
 
 backup="{{ restic_backup|default('') }}"
 
-docker-compose exec -T postgres pg_dumpall -U django -c -f /dump/data.dump
+docker-compose exec -T postgres sh -c 'pg_dumpall -U $POSTGRES_USER -c -f /dump/data.dump'
 docker-compose logs &> log/docker.log || echo "Couldn't get logs from instance"
 
 restic backup $backup docker-compose.yml log ./dump/data.dump {{ restic_backup|default('') }}
