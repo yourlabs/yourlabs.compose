@@ -1,0 +1,27 @@
+version: "3.5"
+services:
+  django:
+    environment:
+      - EMAIL_HOST=mail
+      - EMAIL_PORT=25
+
+  mail:
+    restart: unless-stopped
+    image: djfarrelly/maildev
+    labels:
+    - "traefik.enable=true"
+    - "traefik.docker.network=web"
+    - "traefik.http.services.${CI_PROJECT_SLUG}-${CI_ENVIRONMENT_SLUG}-mail.loadBalancer.server.port=80"
+    - "traefik.http.routers.${CI_PROJECT_SLUG}-${CI_ENVIRONMENT_SLUG}-mail.entryPoints=web"
+    - "traefik.http.routers.${CI_PROJECT_SLUG}-${CI_ENVIRONMENT_SLUG}-mail.rule=host(`mail.${HOST}`)"
+    - "traefik.http.middlewares.devauth.basicauth.users=dev:$$apr1$$VEfR1zp0$$kmVzJs.cB3X9j1wqXijkp."
+    - "traefik.http.middlewares.devauth.basicauth.realm=Please type in `dev` in both username and password"
+    - "traefik.http.routers.${CI_PROJECT_SLUG}-${CI_ENVIRONMENT_SLUG}-mail.middlewares=devauth"
+    - "traefik.http.routers.${CI_PROJECT_SLUG}-${CI_ENVIRONMENT_SLUG}-mail.service=${CI_PROJECT_SLUG}-${CI_ENVIRONMENT_SLUG}-mail"
+    networks:
+    - default
+    - web
+
+networks:
+  web:
+    external: true

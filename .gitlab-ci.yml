@@ -44,7 +44,7 @@ review-deploy:
     url: http://${CI_ENVIRONMENT_SLUG}.$CI_PROJECT_NAME.ci.yourlabs.io
   variables:
     DEPLOY: >
-      compose=docker-compose.yml,docker-compose.traefik.yml
+      compose=docker-compose.yml,docker-compose.traefik.yml,docker-compose.maildev.yml
       lifetime=86400
       project=$CI_ENVIRONMENT_SLUG
   except:
@@ -63,7 +63,7 @@ master-deploy:
     url: https://master.$CI_PROJECT_NAME.ci.yourlabs.io
   variables:
     DEPLOY: >
-      compose=docker-compose.yml,docker-compose.traefik.yml,docker-compose.persist.yml
+      compose=docker-compose.yml,docker-compose.traefik.yml,docker-compose.persist.yml,docker-compose.maildev.yml
       home=/home/$CI_PROJECT_NAME-$CI_ENVIRONMENT_NAME
   only:
     refs:
