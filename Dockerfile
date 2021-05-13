@@ -15,7 +15,7 @@ COPY . /app/
 
 # REMOVE THE FOLLOWING
 RUN pip install bigsudo
-RUN pacman -S --noconfirm ansible
+RUN pacman -Sy --noconfirm ansible
 RUN bigsudo roleinstall /app
 
 # Build frontend in /app/public:
