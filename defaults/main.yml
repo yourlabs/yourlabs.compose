@@ -1,2 +1,5 @@
 ---
 compose: 'docker-compose.yml'
+docker_auth_username: '{{ lookup("env", "CI_REGISTRY_USER", False) }}'
+docker_auth_password: '{{ lookup("env", "CI_REGISTRY_PASSWORD", False) }}'
+docker_auth_registry: '{{ lookup("env", "CI_REGISTRY", "hub.docker.io") }}'
