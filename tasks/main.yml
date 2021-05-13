@@ -94,7 +94,7 @@
     dest: '{{ home }}/docker-compose.yml'
 
 - name: Login to docker registry
-  when: docker_auth_username
+  when: docker_auth_username and docker_auth_password and docker_auth_registry
   docker_login:
     username: '{{ docker_auth_username }}'
     password: '{{ docker_auth_password }}'
