@@ -52,9 +52,7 @@
       DOCKER_CONFIG: '{{ home }}/.docker'
     docker_compose:
       project_src: '{{ home }}'
-      state: stopped
-      pull: '{{ pull|default("no") }}'
-      build: '{{ build|default("no") }}'
+      state: absent
 
   - name: Mise en échec de la commande de déploiement
     fail:
