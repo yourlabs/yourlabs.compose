@@ -5,6 +5,11 @@
     content: '{{ lookup("pipe", "date +%s")|int + lifetime|int }}'
     dest: '{{ home }}/removeat'
 
+- name: Make /root/.yourlabs.compose for ephemeral deploys
+  file:
+    path: /root/.yourlabs.compose
+    state: directory
+
 - name: Install cleaning script
   copy:
     src: remove.sh
