@@ -4,6 +4,11 @@
   include_role: name=yourlabs.docker
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
+- name: Install logrotate
+  package:
+    name: logrotate
+    state: latest
+
 - name: Install docker-compose
   package:
     name: docker-compose
