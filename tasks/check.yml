@@ -5,7 +5,7 @@
   tags: check,update
 
 - name: Generation de l'URL de test à l'aide de l'identifiant unique
-  set_fact: url="{{ lookup('env', 'PROTO') or 'http' }}://{% if lookup('env', 'BASICAUTH_ENABLE') %}{{ lookup('env', 'BASICAUTH_USER', 'dev') }}:{{ lookup('env', 'BASICAUTH_PASS', 'dev') }}@{% endif %}{{ lookup('env', 'HOST') }}/?test={{ test_id }}"
+  set_fact: url="\"{{ lookup('env', 'PROTO') or 'http' }}://{% if lookup('env', 'BASICAUTH_ENABLE') %}{{ lookup('env', 'BASICAUTH_USER')|default('dev', true) }}:{{ lookup('env', 'BASICAUTH_PASS')|default('dev', true) }}@{% endif %}{{ lookup('env', 'HOST') }}/?test={{ test_id }}\""
   tags: check,update
 
 - debug: msg="Checking URL {{ url }}"
