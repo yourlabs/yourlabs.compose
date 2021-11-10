@@ -60,11 +60,24 @@ class FilterModule(object):
 
             # Re-set relative directories because docker-compose will have
             # transformed them to absolute paths
+            service['volumes'] = []
             if 'volumes' in service:
-                service['volumes'] = [
-                    re.sub('^' + hostvars['tempdir']['path'], '.', volume)
-                    for volume in service['volumes']
-                ]
+                for volume in service['volumes']:
+                    if isinstance(volume, str):
+                        # docker-compose 1.x
+                        service['volumes'].append(
+                            re.sub('^' + hostvars['tempdir']['path'], '.', volume)
+                        )
+                    elif isinstance(volume, dict):
+                        # docker-compose 2.x
+                        volume['target'] = re.sub(
+                            '^' + hostvars['tempdir']['path'],
+                            '.',
+                            volume['target']
+                        )
+                    else:
+                        raise Exception(f'Unexpected volume type {type(volume)}')
+
             # Same for build context
             if 'context' in service.get('build', {}):
                 service['build']['context'] = re.sub(
