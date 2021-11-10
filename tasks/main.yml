@@ -68,6 +68,7 @@
 - set_fact: { compose_content: '{{ compose_content.stdout }}' }
 
 - name: Generate compose content
+  delegate_to: localhost
   set_fact:
     compose_content: '{{ compose_content|docker_compose_rewrite(hostvars[inventory_hostname], docker_network_ls.stdout_lines) }}'
 
