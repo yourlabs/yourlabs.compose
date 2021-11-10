@@ -69,10 +69,11 @@ class FilterModule(object):
                         )
                     elif isinstance(volume, dict):
                         # docker-compose 2.x
-                        volume['source'] = volume['source'].replace(
-                            hostvars['tempdir']['path'],
-                            '.',
-                        )
+                        if 'source' in volume:
+                            volume['source'] = volume['source'].replace(
+                                hostvars['tempdir']['path'],
+                                '.',
+                            )
                     else:
                         raise Exception(f'Unexpected volume type {type(volume)}')
 
