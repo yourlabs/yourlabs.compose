@@ -60,7 +60,6 @@ class FilterModule(object):
 
             # Re-set relative directories because docker-compose will have
             # transformed them to absolute paths
-            service['volumes'] = []
             if 'volumes' in service:
                 for volume in service['volumes']:
                     if isinstance(volume, str):
