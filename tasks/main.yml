@@ -4,18 +4,30 @@
   include_role: name=yourlabs.docker
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
-- name: Install logrotate
+- name: Install logrotate and curl
   package:
-    name: logrotate
+    name: logrotate,curl
     state: latest
 
-- include: compose_bin.yml
+- name: Make /usr/local/lib/docker/cli-plugins
+  file:
+    state: directory
+    path: /usr/local/lib/docker/cli-plugins
 
-- name: Install docker-compose if v2 is not available on this host
-  when: compose_bin == 'docker-compose'
-  package:
-    name: docker-compose
-    state: latest
+- name: Detect if /usr/local/lib/docker/cli-plugins/docker-compose is installed and working
+  register: compose_version
+  failed_when: false
+  shell:
+    /usr/local/lib/docker/cli-plugins/docker-compose version
+
+- name: Install docker compose
+  when: compose_version.rc != 0
+  shell: |
+     set -eux
+     rel=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | python -c 'import sys, json; print(json.loads(sys.stdin.read())["tag_name"])')
+     curl -SL https://github.com/docker/compose/releases/download/$rel/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+     /usr/local/lib/docker/cli-plugins/docker-compose version
 
 - name: Create temporary build directory to render jinja2
   register: tempdir
@@ -41,7 +53,7 @@
     dest: '{{ tempdir.path }}'
 
 - name: Generate docker-compose config from yaml files
-  shell: '{{ compose_bin }}{% for f in compose.split(",") %} -f {{ tempdir.path }}/{{ f }}{% endfor %} config'
+  shell: docker compose {% for f in compose.split(",") %} -f {{ tempdir.path }}/{{ f }}{% endfor %} config
   register: compose_content
   environment: '{{ true|allenv }}'
   changed_when: false
@@ -109,41 +121,28 @@
     registry: '{{ docker_auth_registry }}'
     config_path: '{{ home if home is defined else ansible_user_dir + "/" + project }}/.docker/config.json'
 
-- name: Use docker compose
-  when: compose_bin == 'docker compose'
-  block:
-  - name: docker compose pull
-    environment:
-      DOCKER_CONFIG: '{{ home }}/.docker'
-    shell: docker compose pull
-    args:
-      chdir: '{{ home }}'
-    when: pull|default("no")
-
-  - name: docker compose build
-    environment:
-      DOCKER_CONFIG: '{{ home }}/.docker'
-    shell: docker compose build
-    args:
-      chdir: '{{ home }}'
-    when: build|default("no")
-
-  - name: docker compose up
-    environment:
-      DOCKER_CONFIG: '{{ home }}/.docker'
-    args:
-      chdir: '{{ home }}'
-    shell: docker compose up
-
-- name: Use docker-compose (v1/legacy)
-  when: compose_bin == 'docker-compose'
+- name: docker compose pull
   environment:
     DOCKER_CONFIG: '{{ home }}/.docker'
-  docker_compose:
-    project_src: '{{ home }}'
-    state: present
-    pull: '{{ pull|default("no") }}'
-    build: '{{ build|default("no") }}'
+  shell: docker compose pull
+  args:
+    chdir: '{{ home }}'
+  when: pull|default(False)
+
+- name: docker compose build
+  environment:
+    DOCKER_CONFIG: '{{ home }}/.docker'
+  shell: docker compose build
+  args:
+    chdir: '{{ home }}'
+  when: build|default(False)
+
+- name: docker compose up
+  environment:
+    DOCKER_CONFIG: '{{ home }}/.docker'
+  args:
+    chdir: '{{ home }}'
+  shell: docker compose up -d
 
 - name: Schedule stack for removal
   when: lifetime|default(False)
@@ -164,7 +163,7 @@
       }
 
 - name: Wait logs
-  shell: "{{ compose_bin }} logs | grep '{{ wait_grep }}'"
+  shell: docker compose logs | grep '{{ wait_grep }}'
   when: wait_grep is defined
   register: wait_grep_result
   until: not wait_grep_result.rc

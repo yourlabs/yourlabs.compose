@@ -1,7 +1,5 @@
 ---
 
-- include: compose_bin.yml
-
 - name: Generation d'un identifiant unique de test
   set_fact: test_id={{ ansible_date_time|to_uuid }}
   tags: check,update
