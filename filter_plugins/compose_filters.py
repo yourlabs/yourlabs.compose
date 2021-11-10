@@ -48,15 +48,20 @@ class FilterModule(object):
                 elif key in service:
                     service.pop(key)
 
-            for network in service.get('networks', []):
-                if network in config.get('networks', {}).keys():
+            for key, network in service.get('networks', {}).items():
+                # START COMPOSE V2 REGRESSION TEMPORARY WORKAROUND
+                if network is None:
+                    service['networks'][key] = {}
+                # END COMPOSE V2 REGRESSION TEMPORARY WORKAROUND
+
+                if key in config.get('networks', {}).keys():
                     continue
 
-                if network not in available_networks + external_networks:
+                if key not in available_networks + external_networks:
                     continue
 
                 config.setdefault('networks', {})
-                config['networks'][network] = dict(external=dict(name=network))
+                config['networks'][key] = dict(external=dict(name=key))
 
             # Re-set relative directories because docker-compose will have
             # transformed them to absolute paths
