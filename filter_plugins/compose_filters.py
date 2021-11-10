@@ -103,7 +103,8 @@ class FilterModule(object):
         del config['networks']['default']
 
         # another problem caused by the regression
-        for volume in config['volumes'].values():
+        if 'volumes' in config:
+            for volume in config['volumes'].values():
             volume['name'] = re.sub(f'^{project}_', '', volume['name'])
         # END COMPOSE V2 REGRESSION TEMPORARY WORKAROUND
 
