@@ -84,6 +84,14 @@ class FilterModule(object):
                     service['build']['context']
                 )
 
+        # compose v2 show insists on showing global network name for local
+        # networks ... fix this insanity:
+        config['networks'] = {
+            name: network
+            for name, network in config.get('networks', {}).items()
+            if network.get('external', False)
+        }
+
         if external_networks:
             # add a default network again because we added an external network
             # from CLI, otherwise containers wouldn't see each other anymore
