@@ -1,5 +1,7 @@
 ---
 
+- include: compose_bin.yml
+
 - name: Generation d'un identifiant unique de test
   set_fact: test_id={{ ansible_date_time|to_uuid }}
   tags: check,update
@@ -70,7 +72,7 @@
     changed_when: false
 
   - name: Logs du pod docker
-    shell: docker-compose logs --tail=300
+    shell: '{{ compose_bin }} logs --tail=300'
     tags: check,update
     failed_when: false
     changed_when: false

@@ -9,7 +9,10 @@
     name: logrotate
     state: latest
 
-- name: Install docker-compose
+- include: compose_bin.yml
+
+- name: Install docker-compose if v2 is not available on this host
+  when: compose_bin == 'docker-compose'
   package:
     name: docker-compose
     state: latest
@@ -37,8 +40,8 @@
     src: '{% if not item.startswith("/") %}{{ lookup("env", "PWD") + "/" }}{% endif %}{{ item }}'
     dest: '{{ tempdir.path }}'
 
-- name: Generate docker-compose config from compose files
-  shell: docker-compose{% for f in compose.split(',') %} -f {{ tempdir.path }}/{{ f }}{% endfor %} config
+- name: Generate docker-compose config from yaml files
+  shell: '{{ compose_bin }}{% for f in compose.split(",") %} -f {{ tempdir.path }}/{{ f }}{% endfor %} config'
   register: compose_content
   environment: '{{ true|allenv }}'
   changed_when: false
@@ -68,7 +71,6 @@
 - set_fact: { compose_content: '{{ compose_content.stdout }}' }
 
 - name: Generate compose content
-  delegate_to: localhost
   set_fact:
     compose_content: '{{ compose_content|docker_compose_rewrite(hostvars[inventory_hostname], docker_network_ls.stdout_lines) }}'
 
@@ -107,7 +109,34 @@
     registry: '{{ docker_auth_registry }}'
     config_path: '{{ home if home is defined else ansible_user_dir + "/" + project }}/.docker/config.json'
 
-- name: Restart docker-compose services
+- name: Use docker compose
+  when: compose_bin == 'docker compose'
+  block:
+  - name: docker compose pull
+    environment:
+      DOCKER_CONFIG: '{{ home }}/.docker'
+    shell: docker compose pull
+    args:
+      chdir: '{{ home }}'
+    when: pull|default("no")
+
+  - name: docker compose build
+    environment:
+      DOCKER_CONFIG: '{{ home }}/.docker'
+    shell: docker compose build
+    args:
+      chdir: '{{ home }}'
+    when: build|default("no")
+
+  - name: docker compose up
+    environment:
+      DOCKER_CONFIG: '{{ home }}/.docker'
+    args:
+      chdir: '{{ home }}'
+    shell: docker compose up
+
+- name: Use docker-compose (v1/legacy)
+  when: compose_bin == 'docker-compose'
   environment:
     DOCKER_CONFIG: '{{ home }}/.docker'
   docker_compose:
@@ -135,7 +164,7 @@
       }
 
 - name: Wait logs
-  shell: docker-compose logs | grep '{{ wait_grep }}'
+  shell: "{{ compose_bin }} logs | grep '{{ wait_grep }}'"
   when: wait_grep is defined
   register: wait_grep_result
   until: not wait_grep_result.rc
