@@ -70,7 +70,7 @@
     changed_when: false
 
   - name: Logs du pod docker
-    shell: '{{ compose_bin }} logs --tail=300'
+    shell: docker compose logs --tail=300
     tags: check,update
     failed_when: false
     changed_when: false

@@ -84,13 +84,23 @@ class FilterModule(object):
                     service['build']['context']
                 )
 
-        # compose v2 show insists on showing global network name for local
-        # networks ... fix this insanity:
-        config['networks'] = {
-            name: network
-            for name, network in config.get('networks', {}).items()
-            if network.get('external', False)
-        }
+        # START COMPOSE V2 REGRESSION TEMPORARY WORKAROUND
+        # https://github.com/docker/compose/issues/8914
+        project = hostvars['tempdir']['path'].split('/')[-1].replace('.', '')
+        for network in config['networks'].values():
+            if network.get('external', False):  # unless it's external
+                continue
+            network['name'] = re.sub(f'^{project}_', '', network['name'])
+
+        # but then we also have to remove the 'default' network against:
+        # failed to create network default: Error response from daemon:
+        # operation is not permitted on predefined default network
+        del config['networks']['default']
+
+        # another problem caused by the regression
+        for volume in config['volumes'].values():
+            volume['name'] = re.sub(f'^{project}_', '', volume['name'])
+        # END COMPOSE V2 REGRESSION TEMPORARY WORKAROUND
 
         if external_networks:
             # add a default network again because we added an external network
