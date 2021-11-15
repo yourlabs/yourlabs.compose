@@ -6,7 +6,7 @@ for home in /root /home/*; do
         [ -f $project/removeat ] || continue
         if [[ $(date +%s) -gt $(<$project/removeat) ]]; then
             pushd $project
-            docker-compose down --rmi all --volumes --remove-orphans
+            docker compose down --rmi all --volumes --remove-orphans
             popd &> /dev/null
             rm -rf $project
         fi

@@ -14,17 +14,17 @@ if [ -z "${1-}" ]; then
     exit 0
 fi
 restic restore $1 --target $PWD
-docker-compose down --remove-orphans -v
+docker compose down --remove-orphans -v
 mv {{ home }}/data/postgres {{ home }}/postgres-backup-data-$(date +%Y%m%d-%H:%M:%S)
-docker-compose up -d postgres
-until docker-compose exec -T postgres sh -c "test -S /var/run/postgresql/.s.PGSQL.5432"; do
+docker compose up -d postgres
+until docker compose exec -T postgres sh -c "test -S /var/run/postgresql/.s.PGSQL.5432"; do
     sleep 1
 done
 sleep 3 # ugly wait until db starts up, socket waiting aint enough
-docker-compose exec -T postgres sh -c 'psql -d $POSTGRES_DB -U $POSTGRES_USER -f /dump/data.dump'
-docker-compose up -d
+docker compose exec -T postgres sh -c 'psql -d $POSTGRES_DB -U $POSTGRES_USER -f /dump/data.dump'
+docker compose up -d
 retcode=$?
-docker-compose logs -f &
+docker compose logs -f &
 logspid=$!
 [ $retcode = 0 ] || sleep 30
 kill $logspid

@@ -19,9 +19,9 @@ export RESTIC_PASSWORD_FILE={{ home }}/.restic_password
 set -x
 export RESTIC_REPOSITORY={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic' }}
 
-docker-compose up -d postgres
+docker compose up -d postgres
 a=0
-until docker-compose exec -T postgres sh -c "test -S /var/run/postgresql/.s.PGSQL.5432"; do
+until docker compose exec -T postgres sh -c "test -S /var/run/postgresql/.s.PGSQL.5432"; do
     ((a++))
     [[ $a -eq 100 ]] && exit 1
     sleep 1
@@ -31,8 +31,8 @@ sleep 3 # ugly wait until db starts up, socket waiting aint enough
 
 backup="{{ restic_backup|default('') }}"
 
-docker-compose exec -T postgres sh -c 'pg_dumpall -U $POSTGRES_USER -c -f /dump/data.dump'
-docker-compose logs &> log/docker.log || echo "Couldn't get logs from instance"
+docker compose exec -T postgres sh -c 'pg_dumpall -U $POSTGRES_USER -c -f /dump/data.dump'
+docker compose logs &> log/docker.log || echo "Couldn't get logs from instance"
 
 restic backup $backup docker-compose.yml log ./dump/data.dump {{ restic_backup|default('') }}
 
