@@ -5,7 +5,7 @@
   tags: check,update
 
 - name: Generation de l'URL de test à l'aide de l'identifiant unique
-  set_fact: url="\"{{ lookup('env', 'PROTO') or 'http' }}://{% if lookup('env', 'BASICAUTH_ENABLE') %}{{ lookup('env', 'BASICAUTH_USER')|default('dev', true) }}:{{ lookup('env', 'BASICAUTH_PASS')|default('dev', true) }}@{% endif %}{{ lookup('env', 'HOST') }}/?test={{ test_id }}\""
+  set_fact: url="\"{{ lookup('env', 'PROTO') or 'http' }}://{{ lookup('env', 'HOST') }}/?test={{ test_id }}\""
   tags: check,update
 
 - debug: msg="Checking URL {{ url }}"
@@ -18,7 +18,7 @@
     until: url_verify.failed == false
     tags: check,update
     changed_when: false
-    shell: curl --fail -L -I {{ url }} | grep 200
+    shell: curl --fail {% if lookup('env', 'BASICAUTH_ENABLE') %}  --location-trusted  --user {{ lookup('env', 'BASICAUTH_USER')|default('dev', true) }}:{{ lookup('env', 'BASICAUTH_PASS')|default('dev', true) }} {% endif %} -L -I {{ url }} | grep 200
 
   - name: Notification Slack du succès de la vérification
     when: lookup("env", "SLACK_TOKEN")
