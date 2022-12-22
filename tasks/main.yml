@@ -1,33 +1,6 @@
 ---
-
-- name: Ensure docker was setup once on this host
-  include_role: name=yourlabs.docker
-  when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
-
-- name: Install logrotate and curl
-  package:
-    name: logrotate,curl
-    state: latest
-
-- name: Make /usr/local/lib/docker/cli-plugins
-  file:
-    state: directory
-    path: /usr/local/lib/docker/cli-plugins
-
-- name: Detect if /usr/local/lib/docker/cli-plugins/docker-compose is installed and working
-  register: compose_version
-  failed_when: false
-  shell:
-    /usr/local/lib/docker/cli-plugins/docker-compose version
-
 - name: Install docker compose
-  when: compose_version.rc != 0
-  shell: |
-     set -eux
-     rel=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | python -c 'import sys, json; print(json.loads(sys.stdin.read())["tag_name"])')
-     curl -SL https://github.com/docker/compose/releases/download/$rel/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
-     chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-     /usr/local/lib/docker/cli-plugins/docker-compose version
+  include_tasks: install.yml
 
 - name: Create temporary build directory to render jinja2
   register: tempdir
