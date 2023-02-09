@@ -26,7 +26,7 @@
     dest: '{{ tempdir.path }}'
 
 - name: Generate docker-compose config from yaml files
-  shell: docker compose {% for f in compose.split(",") %} -f {{ tempdir.path }}/{{ f }}{% endfor %} config
+  shell: "docker compose {% for f in compose.split(\",\") %} -f {{ tempdir.path }}/{{ f }}{% endfor %} config | sed -e '1s/^name.*$//'"
   register: compose_content
   environment: '{{ true|allenv }}'
   changed_when: false
