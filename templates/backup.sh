@@ -40,6 +40,11 @@ restic backup $backup docker-compose.yml log ./dump/data.dump {{ restic_backup|d
 lftp -c 'set ssl:check-hostname false;connect {{ lookup("env", "LFTP_DSN") }}; mkdir -p {{ home.split("/")[-1] }}; mirror -Rve {{ home }}/restic {{ home.split("/")[-1] }}/restic'
 {% endif %}
 
+{% if lookup('env', 'NOTIFY_ENABLE') %}
+echo "Sending notifs"
+./notify.sh "Backup finished"
+{% endif %}
+
 echo Backup complete, cleaning old backups
 
 rm -rf {{ home }}/dump/data.dump
