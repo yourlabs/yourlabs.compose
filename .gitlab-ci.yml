@@ -6,6 +6,15 @@ build:
     - docker build -f Dockerfile -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
+shellcheck:
+  image: koalaman/shellcheck-alpine
+  stage: test
+  script:
+    - sed -e  's/^{%.*$//g' -e 's@{{.*}}@@g' templates/backup.sh  | shellcheck -
+    - sed -e  's/^{%.*$//g' -e 's@{{.*}}@@g' templates/notify.sh  | shellcheck -
+    - sed -e  's/^{%.*$//g' -e 's@{{.*}}@@g' templates/prune.sh  | shellcheck -
+    - sed -e  's/^{%.*$//g' -e 's@{{.*}}@@g' templates/restore.sh  | shellcheck  -e SC2224 -
+
 build-test:
   image: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   stage: test

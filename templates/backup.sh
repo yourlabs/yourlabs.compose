@@ -1,8 +1,8 @@
-#!/bin/bash -eux
+#!/bin/bash
 
 if [ -z "${BACKUP_FORCE-}" ]; then
-  echo This script is not safe to run multiple instances at the same time
-  echo Starting through systemctl and forwarding journalctl
+  echo "This script is not safe to run multiple instances at the same time"
+  echo "Starting through systemctl and forwarding journalctl"
   set -eux
   journalctl -fu backup-{{ home.split("/")[-1] }} &
   journalpid="$!"
@@ -34,7 +34,7 @@ backup="{{ restic_backup|default('') }}"
 docker compose exec -T postgres sh -c 'pg_dumpall -U $POSTGRES_USER -c -f /dump/data.dump'
 docker compose logs &> log/docker.log || echo "Couldn't get logs from instance"
 
-restic backup $backup docker-compose.yml log ./dump/data.dump {{ restic_backup|default('') }}
+restic backup "$backup" docker-compose.yml log ./dump/data.dump {{ restic_backup|default('') }}
 
 {% if lookup('env', 'LFTP_DSN') %}
 lftp -c 'set ssl:check-hostname false;connect {{ lookup("env", "LFTP_DSN") }}; mkdir -p {{ home.split("/")[-1] }}; mirror -Rve {{ home }}/restic {{ home.split("/")[-1] }}/restic'
