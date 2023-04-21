@@ -131,7 +131,7 @@
         rotate 36
         compress
         notifempty
-        create 0640 1000 1000
+        copytruncate
         sharedscripts
       }
 
