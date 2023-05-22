@@ -4,10 +4,20 @@
   include_role: name=yourlabs.docker
   when: ansible_facts['ansible_local']['yourlabs_docker']['state']|default('') != 'success'
 
-- name: Install logrotate and curl
+- name: Install logrotate and curl (!= archlinux)
   package:
-    name: logrotate,curl
+    name:
+      - logrotate
+      - curl
     state: latest
+  when: ansible_distribution != "Archlinux"
+
+- name: Install logrotate & curl (archlinux)
+  community.general.pacman:
+    name: curl
+    state: "latest"
+    update_cache: true
+  when: ansible_distribution == "Archlinux"
 
 - name: Make /usr/local/lib/docker/cli-plugins
   file:
