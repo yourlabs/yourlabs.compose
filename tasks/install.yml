@@ -14,7 +14,9 @@
 
 - name: Install logrotate & curl (archlinux)
   community.general.pacman:
-    name: curl
+    name:
+      - curl
+      - logrotate
     state: "latest"
     update_cache: true
   when: ansible_distribution == "Archlinux"
