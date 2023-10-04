@@ -1,9 +1,7 @@
-FROM archlinux
-RUN useradd --home-dir /app --uid 1000 app && mkdir -p /app && chown -R app /app
-WORKDIR /app
-RUN pacman -Syu --noconfirm ca-certificates mailcap which gettext python python-pillow python-psycopg2 python-pip python-psutil curl uwsgi uwsgi-plugin-python && rm -rf /var/cache/pacman/pkg
-RUN pip3 install --upgrade pip wheel
-ENV PYTHONIOENCODING=UTF-8 PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+FROM yourlabs/python-app:latest
+
+USER root
+RUN pacman -Syu --noconfirm ca-certificates mailcap which gettext curl
 ENV STATIC_ROOT=/app/public
 RUN mkdir -p /spooler/email && chown -R app /spooler
 RUN pip3 install djcli
@@ -15,7 +13,7 @@ COPY . /app/
 
 # REMOVE THE FOLLOWING
 RUN pip install bigsudo
-RUN pacman -Sy --noconfirm ansible
+RUN pacman -Sy --noconfirm ansible --overwrite "usr/lib/python3.*/site-packages/*"
 RUN bigsudo roleinstall /app
 
 # Build frontend in /app/public:

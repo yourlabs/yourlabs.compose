@@ -56,5 +56,23 @@
     cmd: '{{ home }}/backup.sh'
     chdir: '{{ home }}'
     oncalendar: '*-*-* 23:00:00'
+    backup_notify: '{{ backup_notify }}'
     env:
       BACKUP_FORCE: 1
+
+- name: Installation du script de notification
+  when: backup_notify != 'none'
+  vars:
+    SMTP_ADDR: '{{ lookup("env", "SMTP_ADDR") }}'
+    SENDER_EMAIL: '{{ lookup("env", "SENDER_EMAIL") }}'
+    SENDER_PASS: '{{ lookup("env", "SENDER_PASS") }}'
+    REC_EMAIL: '{{ lookup("env", "REC_EMAIL") }}'
+    MATTERMOST_TOKEN: '{{ lookup("env", "MATTERMOST_TOKEN") }}'
+    CHANNEL_ID: '{{ lookup("env", "CHANNEL_ID") }}'
+    MATTERMOST_USER_ID: '{{ lookup("env", "MATTERMOST_USER_ID") }}'
+    SLACK_WEBHOOK: '{{ lookup("env", "SLACK_WEBHOOK") }}'
+  template:
+    src: notify.sh
+    dest: '{{ home }}/notify.sh'
+    owner: root
+    mode: '0700'
