@@ -28,7 +28,7 @@ build-test:
       wait_grep=spawned.uWSGI.worker.1
       $DEPLOY
       deploy@$HOST
-      -vv
+      -vvvv
       | tee deploy.log
     - grep unreachable=0 deploy.log &> /dev/null
     - grep failed=0 deploy.log &> /dev/null
