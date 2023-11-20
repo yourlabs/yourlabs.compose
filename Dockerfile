@@ -2,6 +2,7 @@ FROM archlinux
 RUN useradd --home-dir /app --uid 1000 app && mkdir -p /app && chown -R app /app
 WORKDIR /app
 RUN pacman -Syu --noconfirm ca-certificates mailcap which gettext python python-pillow python-psycopg2 python-pip python-psutil curl uwsgi uwsgi-plugin-python && rm -rf /var/cache/pacman/pkg
+ENV PIP_BREAK_SYSTEM_PACKAGES 1
 RUN pip3 install --upgrade pip wheel
 ENV PYTHONIOENCODING=UTF-8 PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 ENV STATIC_ROOT=/app/public
