@@ -9,7 +9,9 @@ COPY . /app/
 
 # REMOVE THE FOLLOWING
 RUN pip install bigsudo
-RUN pip install 'ansible<9.0.0'
+RUN rm /usr/lib/python3.11/site-packages/bigsudo/callback_plugins/unixy.py && \
+    cp unixy.py /usr/lib/python3.11/site-packages/bigsudo/callback_plugins/unixy.py
+RUN pacman -Sy --noconfirm --overwrite="*" ansible openssh
 RUN bigsudo roleinstall /app
 
 # Build frontend in /app/public:
