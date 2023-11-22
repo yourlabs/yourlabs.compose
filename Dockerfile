@@ -9,7 +9,7 @@ COPY . /app/
 
 # REMOVE THE FOLLOWING
 RUN pip install bigsudo
-RUN pacman -Sy --noconfirm --overwrite="*" ansible
+RUN pip install 'ansible<9.0.0'
 RUN bigsudo roleinstall /app
 
 # Build frontend in /app/public:
