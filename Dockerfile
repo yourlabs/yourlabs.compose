@@ -8,9 +8,7 @@ RUN mkdir -p /spooler/email && chown -R app /spooler
 COPY . /app/
 
 # REMOVE THE FOLLOWING
-RUN pip install bigsudo
-RUN rm /usr/lib/python3.11/site-packages/bigsudo/callback_plugins/unixy.py && \
-  curl -s "https://raw.githubusercontent.com/ansible/ansible/v2.7.0/lib/ansible/plugins/callback/unixy.py" >> /usr/lib/python3.11/site-packages/bigsudo/callback_plugins/unixy.py
+RUN pip install --upgrade bigsudo
 RUN pacman -Sy --noconfirm --overwrite="*" ansible openssh
 RUN bigsudo roleinstall /app
 
