@@ -1,21 +1,17 @@
-FROM archlinux
-RUN useradd --home-dir /app --uid 1000 app && mkdir -p /app && chown -R app /app
-WORKDIR /app
-RUN pacman -Syu --noconfirm ca-certificates mailcap which gettext python python-pillow python-psycopg2 python-pip python-psutil curl uwsgi uwsgi-plugin-python && rm -rf /var/cache/pacman/pkg
-RUN pip3 install --upgrade pip wheel
-ENV PYTHONIOENCODING=UTF-8 PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
-ENV STATIC_ROOT=/app/public
-RUN mkdir -p /spooler/email && chown -R app /spooler
-RUN pip3 install djcli
+FROM yourlabs/python-app
+ENV PIP_BREAK_SYSTEM_PACKAGES 1
 
-COPY requirements.txt /app
-RUN pip3 install -Ur /app/requirements.txt
+USER root
+RUN mkdir -p /spooler/email && chown -R app /spooler
+
 
 COPY . /app/
 
 # REMOVE THE FOLLOWING
 RUN pip install bigsudo
-RUN pacman -Sy --noconfirm ansible
+RUN rm /usr/lib/python3.11/site-packages/bigsudo/callback_plugins/unixy.py && \
+  curl -s "https://raw.githubusercontent.com/ansible/ansible/v2.7.0/lib/ansible/plugins/callback/unixy.py" >> /usr/lib/python3.11/site-packages/bigsudo/callback_plugins/unixy.py
+RUN pacman -Sy --noconfirm --overwrite="*" ansible openssh
 RUN bigsudo roleinstall /app
 
 # Build frontend in /app/public:
@@ -63,3 +59,4 @@ CMD /usr/bin/bash -euxc "uwsgi \
   --thunder-lock \
   --workers=12 \
   --vacuum"
+
