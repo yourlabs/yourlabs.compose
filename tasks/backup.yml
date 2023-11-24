@@ -5,6 +5,8 @@
 
 - name: Update restic
   shell: restic self-update
+  when: ansible_distribution != "Archlinux"
+  # archlinux have disable the self-update command in restic
 
 - name: Backup encrypt file exists?
   register: stat_backup_password
