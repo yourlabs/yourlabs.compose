@@ -3,6 +3,9 @@
 - name: Installer restic, lftp
   package: name=restic,lftp
 
+- name: Update restic
+  shell: restic self-update
+
 - name: Backup encrypt file exists?
   register: stat_backup_password
   stat:
