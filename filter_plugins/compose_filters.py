@@ -97,10 +97,11 @@ class FilterModule(object):
                 continue
             network['name'] = re.sub(f'^{project}_', '', network['name'])
 
-        # but then we also have to remove the 'default' network against:
-        # failed to create network default: Error response from daemon:
-        # operation is not permitted on predefined default network
-        del config['networks']['default']
+        if 'default' in config.get('networks', ()):
+            # but then we also have to remove the 'default' network against:
+            # failed to create network default: Error response from daemon:
+            # operation is not permitted on predefined default network
+            del config['networks']['default']
 
         # another problem caused by the regression
         if 'volumes' in config:
