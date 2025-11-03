@@ -6,7 +6,7 @@
     home: '{{ ansible_user_dir + "/.yourlabs.compose/" + project|default("default") }}'
 
 - name:
-  docker_compose:
+  community.docker.docker_compose_v2:
     remove_orphans: yes
     state: absent
     remove_images: all
