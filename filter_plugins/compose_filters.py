@@ -29,6 +29,10 @@ class FilterModule(object):
         external_networks = []
         for name, service in config.get('services', {}).items():
             for key, value in hostvars.items():
+                if isinstance(value, str):
+                    # type cast ansible tagged strings to prevent yaml errors
+                    value = str(value)
+
                 if not key.startswith('compose_' + name + '_'):
                     continue
 
