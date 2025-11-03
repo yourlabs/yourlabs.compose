@@ -21,7 +21,7 @@
     shell: curl --fail {% if lookup('env', 'BASICAUTH_ENABLE') %}  --location-trusted  --user {{ lookup('env', 'BASICAUTH_USER')|default('dev', true) }}:{{ lookup('env', 'BASICAUTH_PASS')|default('dev', true) }} {% endif %} -L -I {{ url }} | grep 200
 
   - name: Notification Slack du succès de la vérification
-    when: lookup("env", "SLACK_TOKEN")
+    when: lookup("env", "SLACK_TOKEN")|bool
     tags: update
     slack:
       token: '{{ lookup("env", "SLACK_TOKEN") }}'
@@ -35,7 +35,7 @@
 
   rescue:
   - name: Notification Slack de l'échec de la vérification
-    when: lookup("env", "SLACK_TOKEN")
+    when: lookup("env", "SLACK_TOKEN")|bool
     tags: update
     slack:
       token: '{{ lookup("env", "SLACK_TOKEN") }}'
