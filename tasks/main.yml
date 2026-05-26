@@ -147,7 +147,7 @@
     executable: /bin/bash
 
 - name: Execute post-deploy commands
-  when: postdeploy is defined and postdeploy.strip().replace('\n', '')|length > 0
+  when: postdeploy | default('') | trim | length > 0
   shell: '{{ postdeploy }}'
   args:
     chdir: '{{ home }}'
