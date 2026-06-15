@@ -10,6 +10,13 @@
 
 - debug: msg="Checking URL {{ url }}"
 
+- debug:
+    msg:
+      - "BASICAUTH_DISABLE raw='{{ lookup('env', 'BASICAUTH_DISABLE') }}'"
+      - "after default='{{ lookup('env', 'BASICAUTH_DISABLE') | default('true', true) }}'"
+      - "as bool='{{ lookup('env', 'BASICAUTH_DISABLE') | default('true', true) | bool }}'"
+      - "condition result='{{ not (lookup('env', 'BASICAUTH_DISABLE') | default('true', true) | bool) }}'"
+
 - block:
   - name: Boucle curl d'une minute dans l'attente que le service démarre
     register: url_verify
@@ -18,7 +25,16 @@
     until: url_verify.failed == false
     tags: check,update
     changed_when: false
-    shell: curl --fail {% if lookup('env', 'BASICAUTH_ENABLE') %}  --location-trusted  --user {{ lookup('env', 'BASICAUTH_USER')|default('dev', true) }}:{{ lookup('env', 'BASICAUTH_PASS')|default('dev', true) }} {% endif %} -L -I {{ url }} | grep 200
+    shell: >
+      curl --fail
+      {% if not (lookup('env', 'BASICAUTH_DISABLE') | default('true', true) | bool) %}
+      --location-trusted  --user
+      {{ lookup('env', 'BASICAUTH_USER')|default('dev', true) }}:{{ lookup('env', 'BASICAUTH_PASS')|default('dev', true) }}
+      {% endif %}
+      {% if  (lookup('env', 'INSECURE') | default('false', false) | bool) %}
+      --insecure
+      {% endif %}
+      -L -I {{ url }} | grep 200
 
   - name: Notification Slack du succès de la vérification
     when: lookup("env", "SLACK_TOKEN")|bool
