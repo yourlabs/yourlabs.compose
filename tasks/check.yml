@@ -80,7 +80,8 @@
 
   always:
   - name: Logs du load balancer
-    shell: docker logs --since=5m traefik 2>&1 | grep -C1 "{{ test_id }}"
+    # --since will parse the whole logs which is very slow
+    shell: docker logs tail 10000 traefik 2>&1 | grep -C1 "{{ test_id }}"
     tags: check,update
     failed_when: false
     changed_when: false
