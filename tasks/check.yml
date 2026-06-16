@@ -10,6 +10,8 @@
 
 - debug: msg="Checking URL {{ url }}"
 
+# test
+
 - block:
   - name: Boucle curl d'une minute dans l'attente que le service démarre
     register: url_verify
