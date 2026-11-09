@@ -18,7 +18,7 @@ set -eu
 export RESTIC_PASSWORD_FILE={{ home }}/.restic_password
 set -x
 export RESTIC_REPOSITORY={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic' }}
-export RESTIC_CACHE_DIR={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restici_cache' }}
+export RESTIC_CACHE_DIR={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic_cache' }}
 
 docker compose up -d postgres
 a=0

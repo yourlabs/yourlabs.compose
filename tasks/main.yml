@@ -146,8 +146,10 @@
     chdir: '{{ home }}'
     executable: /bin/bash
 
+# An {% if %} that prints nothing renders as None. trim(None) is the
+# string "None", so default() must replace false values before trim.
 - name: Execute post-deploy commands
-  when: postdeploy | default('') | trim | length > 0
+  when: postdeploy | default('', true) | trim | length > 0
   shell:
     cmd: '{{ postdeploy }}'
     chdir: '{{ home }}'
