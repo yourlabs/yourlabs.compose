@@ -18,6 +18,7 @@ set -eu
 export RESTIC_PASSWORD_FILE={{ home }}/.restic_password
 set -x
 export RESTIC_REPOSITORY={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restic' }}
+export RESTIC_CACHE_DIR={{ lookup('env', 'RESTIC_REPOSITORY') or home + '/restici_cache' }}
 
 docker compose up -d postgres
 a=0
@@ -34,7 +35,7 @@ backup="{{ restic_backup|default('') }}"
 docker compose exec -T postgres sh -c 'pg_dumpall -U $POSTGRES_USER -c -f /dump/data.dump'
 docker compose logs &> log/docker.log || echo "Couldn't get logs from instance"
 
-restic backup $backup docker-compose.yml log ./dump/data.dump {{ restic_backup|default('') }}
+restic backup $backup docker-compose.yml log ./postgres/dump/data.dump {{ restic_backup|default('') }}
 
 {% if lookup('env', 'LFTP_DSN') %}
 lftp -c 'set ssl:check-hostname false;connect {{ lookup("env", "LFTP_DSN") }}; mkdir -p {{ home.split("/")[-1] }}; mirror -Rve {{ home }}/restic {{ home.split("/")[-1] }}/restic'
