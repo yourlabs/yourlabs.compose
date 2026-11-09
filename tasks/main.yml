@@ -148,8 +148,8 @@
 
 - name: Execute post-deploy commands
   when: postdeploy | default('') | trim | length > 0
-  shell: '{{ postdeploy }}'
-  args:
+  shell:
+    cmd: '{{ postdeploy }}'
     chdir: '{{ home }}'
 
 - include_tasks: check.yml
