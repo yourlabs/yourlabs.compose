@@ -45,8 +45,8 @@
 
 - debug: msg='{{ lookup("env", "PROTO")|default("http") == "https" }}'
 
-- include_tasks: backup.yml
-  when: project is not defined
+#- include_tasks: backup.yml
+#  when: project is not defined
 
 - name: Get the docker networks list
   shell: docker network ls --format '{{ "{{ .Name }}" }}'
